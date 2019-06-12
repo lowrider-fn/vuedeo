@@ -9,6 +9,7 @@
                    :poster="videoPoster"
                    :width="width"
                    :height="height"
+                   @click.self="$emit('playOrPause')"
             >
                 <source v-for="video in videos"
                         :key="video.id"
@@ -83,5 +84,8 @@ export default {
 	height: 100%;
 	width: 100%;
 	position: relative;
+}
+.vuedeo__player{
+	cursor: pointer;
 }
 </style>

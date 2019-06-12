@@ -7,9 +7,15 @@
                 @ready="ready($event)"
                 @ended="ended($event)"
                 @loaded="loaded($event)"
+                @playOrPause="playOrPause()"
         >
             <template v-slot:controls>
                 <div class="controls">
+                    <div class="controls__time-wrap">
+                        <div class="controls__time-current">
+                            {{ getCurrentTime }} {{ getDuration }}
+                        </div>
+                    </div>
                     <div ref="seekbar" class="controls__seekbar-wrap"
                          @mousedown="grabSeekbar($event)"
                          @touchstart="grabSeekbar($event)"
@@ -42,13 +48,42 @@
                                 <img class="controls__icon" :src="stopIcon">
                             </button>
                         </div>
-                        <div class="controls__time-wrap">
-                            <span class="controls__time-current">
-                                {{ getCurrentTime }}
-                            </span>
-                            <span class="controls__time-all">
-                                {{ getDuration }}
-                            </span>
+                        <div class="controls__left-wrap">
+                            <button class="controls__btn"
+                                    @click="muteOrVolume()"
+                            >
+                                <img class="controls__volume-icon"
+                                     :src="mutedIcon"
+                                     v-if="isMuted"
+                                >
+                                <img class="controls__volume-icon"
+                                     :src="volumeIcon"
+                                     v-else
+                                >
+                            </button>
+                            <div ref="volbar" class="controls__volbar-wrap"
+                                 @mousedown="grabVolbar($event)"
+                                 @touchstart="grabVolbar($event)"
+                                 @touchmove="moveVolbar($event)"
+                                 @touchend="releaseVolbar($event)"
+                            >
+                                <div class="controls__seekbar-current"
+                                     :style='{ transform: "scaleX(" + getProgressRate + ")" }'
+                                ></div>
+                                <div class="controls__seekbar-back"></div>
+                            </div>
+                            <button class="controls__btn"
+                                    @click="setScreenSize()"
+                            >
+                                <img class="controls__volume-icon"
+                                     :src="fullScreenIcon"
+                                     v-if="IsFullScreen"
+                                >
+                                <img class="controls__volume-icon"
+                                     :src="exitFullScreenIcon"
+                                     v-else
+                                >
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -62,6 +97,10 @@ import Vuedeo from './components/vuedeo';
 import pauseIcon from '@/assets/icons/pause.svg';
 import playIcon from '@/assets/icons/play.svg';
 import stopIcon from '@/assets/icons/stop.svg';
+import mutedIcon from '@/assets/icons/mute.svg';
+import volumeIcon from '@/assets/icons/volume.svg';
+import fullScreenIcon from '@/assets/icons/full-screen.svg';
+import exitFullScreenIcon from '@/assets/icons/exit-full-screen.svg';
 
 const debounce = (callback, duration) => {
     let timer;
@@ -81,6 +120,10 @@ export default {
         pauseIcon,
         playIcon,
         stopIcon,
+        volumeIcon,
+        mutedIcon,
+        exitFullScreenIcon,
+        fullScreenIcon,
 
         player           : null,
         seekbar          : null,
@@ -90,6 +133,8 @@ export default {
         duration         : 0,
         isPlaying        : false,
         isGrabbingSeekbar: false,
+        isMuted          : false,
+        IsFullScreen     : false,
 
         width : 500,
         height: 300,
@@ -136,29 +181,23 @@ export default {
         play() {
             this.player.play();
             this.isPlaying = true;
-            this.loop();
+            this.toLoop();
         },
         pause() {
             this.player.pause();
             this.isPlaying = false;
         },
         playOrPause() {
-            if (this.isPlaying) {
-                this.pause();
-            } else {
-                this.play();
-            }
+            this.isPlaying ? this.pause() : this.play();
         },
         stop() {
             this.player.currentTime = 0;
             this.pause();
         },
-        loop() {
+        toLoop() {
             this.time = this.player.currentTime;
             if (!this.isPlaying) return;
-            requestAnimationFrame(() => {
-                this.loop();
-            });
+            requestAnimationFrame(() => this.toLoop());
         },
         grabSeekbar(e) {
             e.preventDefault();
@@ -191,6 +230,22 @@ export default {
 
             return `${minutes}:${seconds}`;
         },
+        muteOrVolume() {
+            this.player.muted = !this.player.muted;
+            this.isMuted = this.player.muted;
+        },
+        setScreenSize() {
+            if (this.player.requestFullScreen) {
+                this.player.requestFullScreen();
+            } else if (this.player.webkitRequestFullScreen) {
+                this.player.webkitRequestFullScreen();
+            } else if (this.player.mozRequestFullScreen) {
+                this.player.mozRequestFullScreen();
+            }
+
+            this.IsFullScreen = !this.IsFullScreen;
+            console.log(this.player.controls);
+        },
     },
 };
 </script>
@@ -221,7 +276,7 @@ export default {
         cursor: pointer;
         position: relative;
         margin-bottom: 10px;
-        padding: 10px 0;
+        padding: 5px 0 10px;
         }
         &-current, &-back {
         height: 3px;
@@ -246,6 +301,20 @@ export default {
         align-items: center;
         justify-content: space-between
     }
+    &__left-wrap{
+        display: flex;
+        position: relative;
+        cursor: pointer;
+        width: 50%;
+        justify-content: space-between
+    }
+    &__volbar-wrap{
+        display: flex;
+        position: relative;
+        cursor: pointer;
+        width: 80%;
+        justify-content: space-between
+    }
     &__btn {
     transition:all, 0.3s, ease-in-out;
     background : transparent;
@@ -267,17 +336,20 @@ export default {
     &__icon{
         width: 40px;
     }
+    &__volume-icon{
+        width: 20px;
+    }
     &__time {
         &-wrap {
-        margin-left: 1em;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end
         }
         &-current {
             color: white;
         margin-right: 0.25em;
-        }
-        &-all {
-               color: white;
-        margin-left: 0.25em;
+        font-size: 12px
+
         }
     }
 }
