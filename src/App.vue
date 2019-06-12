@@ -8,6 +8,8 @@
                 @loaded="loaded($event)"
                 @playOrPause="playOrPause()"
         >
+            <template v-slot:preloader v-if="!player">
+            </template>
             <template v-slot:controls>
                 <div class="controls">
                     <div class="controls__time-wrap">

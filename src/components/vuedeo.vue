@@ -15,6 +15,7 @@
                     :src="video.src"
             >
         </video>
+        <slot name="preloader"></slot>
         <slot name="controls"></slot>
     </div>
 </template>
