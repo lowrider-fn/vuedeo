@@ -1,24 +1,21 @@
 <template>
-    <div class="vuedeo" :style="`width:${width}px`">
-        <div class="vuedeo__inner" :style="`width:${width}px`">
-            <video ref="vuedeo" class="vuedeo__player"
-                   :controls="controls"
-                   :autoplay="autoplay"
-                   :loop="loop"
-                   :muted="muted"
-                   :poster="videoPoster"
-                   :width="width"
-                   :height="height"
-                   @click.self="$emit('playOrPause')"
+    <div :style="`width:${width}px`">
+        <video ref="vuedeo" class="vuedeo__player"
+               :controls="controls"
+               :autoplay="autoplay"
+               :loop="loop"
+               :muted="muted"
+               :poster="videoPoster"
+               :width="width"
+               @click.self="$emit('playOrPause')"
+        >
+            <source v-for="video in videos"
+                    :key="video.id"
+                    :id="video.id"
+                    :src="video.src"
             >
-                <source v-for="video in videos"
-                        :key="video.id"
-                        :id="video.id"
-                        :src="video.src"
-                >
-            </video>
-            <slot name="controls"></slot>
-        </div>
+        </video>
+        <slot name="controls"></slot>
     </div>
 </template>
 
@@ -30,10 +27,6 @@ export default {
         width: {
             type   : Number,
             default: 500,
-        },
-        height: {
-            type   : Number,
-            default: 300,
         },
         autoplay: {
             type   : Boolean,
@@ -75,17 +68,3 @@ export default {
     },
 };
 </script>
-
-<style scoped lang="scss">
-.vuedeo{
-	width: 100%
-}
-.vuedeo__inner{
-	height: 100%;
-	width: 100%;
-	position: relative;
-}
-.vuedeo__player{
-	cursor: pointer;
-}
-</style>

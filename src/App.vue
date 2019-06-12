@@ -2,7 +2,6 @@
     <div id="app">
         <vuedeo class="vuedeo"
                 :width="width"
-                :height="height"
                 :videos="videos"
                 @ready="ready($event)"
                 @ended="ended($event)"
@@ -137,7 +136,6 @@ export default {
         IsFullScreen     : false,
 
         width : 500,
-        height: 300,
         videos: [{
             id : 'rt',
             src: 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
@@ -235,42 +233,60 @@ export default {
             this.isMuted = this.player.muted;
         },
         setScreenSize() {
-            if (this.player.requestFullScreen) {
-                this.player.requestFullScreen();
-            } else if (this.player.webkitRequestFullScreen) {
-                this.player.webkitRequestFullScreen();
-            } else if (this.player.mozRequestFullScreen) {
-                this.player.mozRequestFullScreen();
-            }
-
+            if (this.IsFullScreen) {
+                if (document.cancelFullScreen) document.cancelFullScreen();
+                else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            } else if (this.player.requestFullScreen) this.player.requestFullScreen();
+            else if (this.player.webkitRequestFullScreen) this.player.webkitRequestFullScreen();
+            else if (this.player.mozRequestFullScreen) this.player.mozRequestFullScreen();
             this.IsFullScreen = !this.IsFullScreen;
-            console.log(this.player.controls);
         },
     },
 };
 </script>
 
 <style lang="scss">
-.vuedeo{
-   margin: 40px auto 0
+video{
+    cursor: pointer;
+    &::-webkit-media-controls {
+        display:none !important;
+    }
 }
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-
+}
+.vuedeo{
+    overflow: hidden;
+    position: relative;
+    &:fullscreen {
+        max-width: none;
+        width: 100vw!important;
+    }
+    &:-webkit-full-screen {
+        max-width: none;
+        width: 100vw!important;
+        height: 100vh;
+    }
+    &:hover .controls {
+        transform: translateY(0);
+    }
 }
 
 .controls{
+    box-sizing: border-box;
     position:absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     background: #111;
     padding: 5px;
-      box-sizing: border-box;
+    transform: translateY(100%) translateY(1px);;
+    transition:all .3s;
+    z-index: 2147483648;
     &__seekbar {
         &-wrap {
         cursor: pointer;
