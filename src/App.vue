@@ -15,40 +15,44 @@
             </template>
             <template v-slot:controls>
                 <div class="controls">
-                    <c-current-time :time="getCurrentTime" />
-                    <c-duration-time :time="getDuration" />
-
-                    <c-play-pause :isPlaying="isPlaying"
-                                  :sprite="sprite"
-                                  :icon="'play'"
-                                  :data="button.playControl"
-                                  @playOrPause="playOrPause()"
+                    <c-time
+                        :data="time.current"
                     />
-                    <c-stop :sprite="sprite"
-                            :data="button.stop"
-                            @stop="stop()"
+                    <c-time
+                        :data="time.duration"
                     />
-                    <c-time-bar ref="timebar"
-                                :time="getProgressTime"
-                                @grab="grabSeekbar($event)"
-                                @move="moveSeekbar($event)"
-                                @end="releaseSeekbar($event)"
+                    <c-btn :isShow="isPlaying"
+                           :sprite="sprite"
+                           :data="button.playControl"
+                           @click="playOrPause()"
                     />
-                    <c-muted :isMuted="isMuted"
-                             :sprite="sprite"
-                             :data="button.muted"
-                             @mutedOrVolume="mutedOrVolume()"
+                    <c-btn :sprite="sprite"
+                           :data="button.stop"
+                           @click="stop()"
                     />
-                    <c-volume-bar ref="volbar"
-                                  :time="getProgressVol"
-                                  @grab="grabVolbar($event)"
-                                  @move="moveVolbar($event)"
-                                  @end="releaseVolbar($event)"
+                    <c-bar ref="timebar"
+                           :scale="getProgressTime"
+                           :data="bar.timebar"
+                           @grab="grabSeekbar($event)"
+                           @move="moveSeekbar($event)"
+                           @end="releaseSeekbar($event)"
                     />
-                    <c-fullscreen :IsFullScreen="IsFullScreen"
-                                  :sprite="sprite"
-                                  :data="button.fullscreen"
-                                  @resize="setScreenSize()"
+                    <c-btn :iShow="isMuted"
+                           :sprite="sprite"
+                           :data="button.muted"
+                           @click="mutedOrVolume()"
+                    />
+                    <c-bar ref="volbar"
+                           :scale="volume"
+                           :data="bar.volbar"
+                           @grab="grabVolbar($event)"
+                           @move="moveVolbar($event)"
+                           @end="releaseVolbar($event)"
+                    />
+                    <c-btn :IsShow="IsFullScreen"
+                           :sprite="sprite"
+                           :data="button.fullscreen"
+                           @click="setScreenSize()"
                     />
                 </div>
             </template>
@@ -60,15 +64,10 @@
 
 <script>
 import Vuedeo from './components/vuedeo';
-import PlayPause from './components/controls/c-play-pause';
-import Stop from './components/controls/c-stop';
-import Muted from './components/controls/c-muted';
-import Fullscreen from './components/controls/c-fullscreen';
-import DurationTime from './components/controls/c-duration-time';
-import CurrentTime from './components/controls/c-current-time';
-import Timebar from './components/controls/c-time-bar';
-import Volbar from './components/controls/c-volume-bar';
+import Time from './components/controls/c-time';
+import Bar from './components/controls/c-bar';
 
+import Btn from './components/controls/c-btn';
 import sprite from './sprite';
 
 const debounce = (callback, duration) => {
@@ -83,15 +82,10 @@ const debounce = (callback, duration) => {
 export default {
     name      : 'App',
     components: {
-        vuedeo           : Vuedeo,
-        'c-play-pause'   : PlayPause,
-        'c-stop'         : Stop,
-        'c-fullscreen'   : Fullscreen,
-        'c-muted'        : Muted,
-        'c-duration-time': DurationTime,
-        'c-current-time' : CurrentTime,
-        'c-time-bar'     : Timebar,
-        'c-volume-bar'   : Volbar,
+        vuedeo  : Vuedeo,
+        'c-btn' : Btn,
+        'c-time': Time,
+        'c-bar' : Bar,
     },
     data: () => ({
         sprite,
@@ -100,7 +94,7 @@ export default {
 
         seekbarWidth     : 0,
         seekbarOffsetX   : 0,
-        time             : 0,
+        currentTime      : 0,
         duration         : 0,
         isGrabbingSeekbar: false,
 
@@ -152,20 +146,63 @@ export default {
                     class : 'btn--muted btn',
                     action: () => this.mutedOrVolume(),
                     icons : [
-                        { id: 'volume', class: 'icon--volume icon', show: this.isMuted },
-                        { id: 'muted', class: 'icon--muted icon', show: !this.isMuted },
+                        { id: 'volume', class: 'icon--volume icon', show: !this.isMuted },
+                        { id: 'muted', class: 'icon--muted icon', show: this.isMuted },
                     ],
                 },
             };
         },
-        getProgressTime() {
-            return this.time / this.duration;
+        bar() {
+            return {
+                timebar: {
+                    bar: {
+                        class     : 'time bar',
+                        actionDrag: e => this.grabSeekbar(e),
+                        actionMove: e => this.moveSeekbar(e),
+                        actionEnd : e => this.releaseSeekbar(e),
+                    },
+                    current: {
+                        class: 'time__current bar__current',
+                        scale: this.getProgressTime,
+                    },
+                    back: {
+                        class: 'time__back bar__back',
+                    },
+                },
+                volbar: {
+                    bar: {
+                        class     : 'vol bar',
+                        actionDrag: e => this.grabVolbar(e),
+                        actionMove: e => this.moveVolbar(e),
+                        actionEnd : e => this.releaseVolbar(e),
+                    },
+                    current: {
+                        class: 'vol__current bar__current',
+                        scale: this.volume,
+                    },
+                    back: {
+                        class: 'vol__back bar__back',
+                    },
+                },
+            };
         },
-        getProgressVol() {
-            return this.volume;
+        time() {
+            return {
+                current: {
+                    class: 'time time--current',
+                    time : this.getCurrentTime,
+                },
+                duration: {
+                    class: 'time time--duration',
+                    time : this.getDuration,
+                },
+            };
+        },
+        getProgressTime() {
+            return this.currentTime / this.duration;
         },
         getCurrentTime() {
-            return this.convertSecondsToTime(this.time);
+            return this.convertSecondsToTime(this.currentTime);
         },
         getDuration() {
             return this.convertSecondsToTime(this.duration);
@@ -229,7 +266,7 @@ export default {
         },
 
         toLoop() {
-            this.time = this.player.currentTime;
+            this.currentTime = this.player.currentTime;
             if (!this.isPlaying) return;
             requestAnimationFrame(() => this.toLoop());
         },
@@ -238,14 +275,14 @@ export default {
             e.preventDefault();
             this.isGrabbingSeekbar = true;
             this.player.currentTime = e.layerX / this.seekbarWidth * this.duration;
-            this.time = this.player.currentTime;
+            this.currentTime = this.player.currentTime;
             this.player.pause();
         },
         moveSeekbar(e) {
             e.preventDefault();
             if (!this.isGrabbingSeekbar) return;
             this.player.currentTime = (e.clientX - this.seekbarOffsetX - window.pageXOffset) / this.seekbarWidth * this.duration;
-            this.time = this.player.currentTime;
+            this.currentTime = this.player.currentTime;
         },
         releaseSeekbar(e) {
             e.preventDefault();
@@ -320,6 +357,43 @@ export default {
 </script>
 
 <style lang="scss">
+    #app {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    }
+    video {
+        width:100%;
+        height:auto;
+        cursor: pointer;
+        &::-webkit-media-controls {
+            display:none !important;
+        }
+    }
+
+    .vuedeo{
+        overflow: hidden;
+        position: relative;
+        transition:all .3s;
+        height:auto;
+        &:hover .controls {
+            transform: translateY(0);
+        }
+    }
+
+    .controls{
+        box-sizing: border-box;
+        position:absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        padding: 5px;
+        transform: translateY(100%) translateY(1px);;
+        transition:all .3s;
+        z-index: 2147483647;
+    }
+
     .btn{
         -webkit-transition:all, 0.3s, ease-in-out;
         -o-transition:all, 0.3s, ease-in-out;
@@ -340,172 +414,54 @@ export default {
             opacity : 0.6;
         }
     }
+
     .icon{
         width: 40px;
         height: 40px;
         color: white
     }
+
     .icon svg{
         width: 40px;
         height: 40px;
     }
 
-figure {
-	height:auto;
-}
-figcaption {
-	display:block;
-}
-video {
-	width:100%;
-    height:auto;
-    cursor: pointer;
-    &::-webkit-media-controls {
-        display:none !important;
-    }
-}
-
-/* fullscreen */
-html:-ms-fullscreen {
-	width:100%;
-}
-:-webkit-full-screen {
-	background-color:transparent;
-}
-/* hide controls on fullscreen with WebKit */
-figure[data-fullscreen=true] video::-webkit-media-controls {
-	display:none !important;
-}
-figure[data-fullscreen=true] {
-	max-width:100%;
-	width:100%;
-	margin:0;
-	padding:0;
-}
-figure[data-fullscreen=true] video {
-	height:auto;
-}
-figure[data-fullscreen=true] figcaption {
-	display:none;
-}
-figure[data-fullscreen=true] .controls {
-	position:absolute;
-	bottom:2%;
-	width:100%;
-	z-index:2147483647;
-}
-figure[data-fullscreen=true] .controls li {
-	width:5%;
-}
-figure[data-fullscreen=true] .controls .progress {
-	width:68%;
-}
-video{
-    cursor: pointer;
-    &::-webkit-media-controls {
-        display:none !important;
-    }
-}
-
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.vuedeo{
-    overflow: hidden;
-    position: relative;
-    &:fullscreen {
-        max-width: none;
-        width: 100vw!important;
-    }
-    &:-webkit-full-screen {
-        max-width: none;
-        width: 100vw!important;
-        height: 100vh;
-    }
-    &:hover .controls {
-        transform: translateY(0);
-    }
-}
-
-.controls{
-    box-sizing: border-box;
-    position:absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #111;
-    padding: 5px;
-    transform: translateY(100%) translateY(1px);;
-    transition:all .3s;
-    z-index: 2147483648;
-    &__seekbar {
-        &-wrap {
+    .bar {
         cursor: pointer;
         position: relative;
         margin-bottom: 10px;
         padding: 10px 0;
         margin: 0 10px;
-        }
-        &-current, &-back {
+        &__current, &__back {
         height: 3px;
         position: absolute;
         top: 10px;
         right: 0;
         left: 0;
         }
-        &-current {
+        &__current {
             // position: relative;
             // top: 5px;
-        z-index: 2;
-        background-color: red;
-        transform: scaleX(0);
-        transform-origin: left;
-        &:after{
-            content:'';
-            position: absolute;
-            background:white;
-            width: 30px;
-            height: 10px;
-            right: 0;
+            z-index: 2;
+            background-color: red;
+            transform: scaleX(0);
+            transform-origin: left;
+            &:after{
+                content:'';
+                position: absolute;
+                background:white;
+                width: 30px;
+                height: 10px;
+                right: 0;
+            }
         }
-        }
-        &-back {
+        &__back {
         background-color: white;
         }
     }
-    &__control-panel {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between
-    }
-    &__left-wrap{
-        display: flex;
-        position: relative;
-        cursor: pointer;
-        width: 50%;
-        justify-content: space-between
-    }
-    &__volbar-wrap{
-        display: flex;
-        position: relative;
-        cursor: pointer;
-        width: 80%;
-        padding: 10px 0;
-        margin: 0 10px;
-        justify-content: space-between
-    }
-    &__btn {
 
+    .time{
+        font-size: 14px;
+        color: white
     }
-    &__icon{
-        width: 40px;
-    }
-    &__volume-icon{
-        width: 20px;
-    }
-}
-
 </style>

@@ -1,5 +1,6 @@
 <template>
-    <figure :data-fullscreen="IsFullScreen">
+    <figure>
+        <slot name="header"></slot>
         <video ref="vuedeo"
                class="vuedeo__player"
                :controls="controls"
@@ -20,7 +21,7 @@
             >
 
         </video>
-        <slot name="header"></slot>
+
         <slot name="body"></slot>
         <slot name="preloader"></slot>
         <slot name="controls"></slot>
@@ -38,10 +39,6 @@ export default {
             default: 500,
         },
         autoplay: {
-            type   : Boolean,
-            default: false,
-        },
-        IsFullScreen: {
             type   : Boolean,
             default: false,
         },

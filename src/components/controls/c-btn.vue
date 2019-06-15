@@ -1,6 +1,6 @@
 <template>
     <button :class="data.class"
-            @click="data.action()"
+            @click="data.action($event)"
     >
         <c-icon v-for="(icon,i) in data.icons"
                 :key="i"
@@ -29,18 +29,18 @@ export default {
             type: Object,
             default() {
                 return {
-                    class : 'btn--stop btn',
-                    action: () => this.$emit('stop'),
+                    class : 'btn',
+                    action: e => this.$emit('click', e),
                     icons : [
-                        { id: 'stop', class: 'icon--stop icon', show: true },
+                        { id: 'icon', class: 'icon', show: this.isShow },
                     ],
                 };
             },
         },
+        isShow: {
+            type   : Boolean,
+            default: true,
+        },
     },
 };
 </script>
-
-<style>
-
-</style>
