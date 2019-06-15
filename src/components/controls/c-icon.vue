@@ -7,7 +7,7 @@
 <script>
 export default {
     props: {
-        icon: {
+        id: {
             type    : String,
             required: true,
         },
@@ -22,7 +22,7 @@ export default {
     },
     computed: {
         currentIcon() {
-            return this.sprite[this.icon];
+            return this.sprite[this.id];
         },
     },
 };

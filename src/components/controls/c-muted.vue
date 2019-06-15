@@ -1,15 +1,13 @@
 <template>
-    <button :class="classBtn"
-            @click="$emit('mutedOrVolume')"
+    <button :class="data.class"
+            @click="data.action()"
     >
-        <!-- <c-icon :class="classIcon"
+        <c-icon v-for="(icon,i) in data.icons"
+                :key="i"
+                :class="icon.class"
+                :id="icon.id"
                 :sprite="sprite"
-                :icon="icon"
-                v-if="isMuted"
-        /> -->
-        <c-icon :class="classIcon"
-                :sprite="sprite"
-                :icon="icon"
+                v-show="icon.show"
         />
     </button>
 </template>
@@ -27,17 +25,18 @@ export default {
             type   : Object,
             default: () => { sprite },
         },
-        icon: {
-            type   : String,
-            default: 'muted',
-        },
-        classIcon: {
-            type   : String,
-            default: 'muted--icon icon',
-        },
-        classBtn: {
-            type   : String,
-            default: 'muted--btn btn',
+        data: {
+            type: Object,
+            default() {
+                return {
+                    class : 'btn--muted btn',
+                    action: () => this.$emit('mutedOrVolume'),
+                    icons : [
+                        { id: 'volume', class: 'icon--volume icon', show: this.isMuted },
+                        { id: 'muted', class: 'icon--muted icon', show: !this.isMuted },
+                    ],
+                };
+            },
         },
         isMuted: {
             type   : Boolean,

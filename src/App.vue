@@ -21,10 +21,11 @@
                     <c-play-pause :isPlaying="isPlaying"
                                   :sprite="sprite"
                                   :icon="'play'"
+                                  :data="button.playControl"
                                   @playOrPause="playOrPause()"
                     />
                     <c-stop :sprite="sprite"
-                            :icon="'stop'"
+                            :data="button.stop"
                             @stop="stop()"
                     />
                     <c-time-bar ref="timebar"
@@ -35,7 +36,7 @@
                     />
                     <c-muted :isMuted="isMuted"
                              :sprite="sprite"
-                             :icon="'muted'"
+                             :data="button.muted"
                              @mutedOrVolume="mutedOrVolume()"
                     />
                     <c-volume-bar ref="volbar"
@@ -46,7 +47,7 @@
                     />
                     <c-fullscreen :IsFullScreen="IsFullScreen"
                                   :sprite="sprite"
-                                  :icon="'fullscreenOn'"
+                                  :data="button.fullscreen"
                                   @resize="setScreenSize()"
                     />
                 </div>
@@ -118,9 +119,45 @@ export default {
             src : 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
             type: 'video/mp4',
         }],
+
     }),
 
     computed: {
+        button() {
+            return {
+                fullscreen: {
+                    class : 'btn--fullscreen btn',
+                    action: () => this.setScreenSize(),
+                    icons : [
+                        { id: 'fullscreenOn', class: 'icon--fullscreen-on icon', show: !this.IsFullScreen },
+                        { id: 'fullscreenOff', class: 'icon--fullscreen icon', show: this.IsFullScreen },
+                    ],
+                },
+                playControl: {
+                    class : 'btn--play-control btn',
+                    action: () => this.playOrPause(),
+                    icons : [
+                        { id: 'play', class: 'icon--play icon', show: !this.isPlaying },
+                        { id: 'pause', class: 'icon--pause icon', show: this.isPlaying },
+                    ],
+                },
+                stop: {
+                    class : 'btn--stop btn',
+                    action: () => this.stop(),
+                    icons : [
+                        { id: 'stop', class: 'icon--stop icon', show: true },
+                    ],
+                },
+                muted: {
+                    class : 'btn--muted btn',
+                    action: () => this.mutedOrVolume(),
+                    icons : [
+                        { id: 'volume', class: 'icon--volume icon', show: this.isMuted },
+                        { id: 'muted', class: 'icon--muted icon', show: !this.isMuted },
+                    ],
+                },
+            };
+        },
         getProgressTime() {
             return this.time / this.duration;
         },
@@ -135,8 +172,6 @@ export default {
         },
     },
     mounted() {
-        console.log(this.sprite);
-
         window.addEventListener('resize', debounce(() => {
             this.resizeLayoutVolbar();
             this.resizeLayoutSeekbar();
@@ -276,7 +311,7 @@ export default {
             else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
         },
         setIsFullScreen() {
-            this.IsFullScreen = !this.isFullscreen;
+            this.IsFullScreen = !this.IsFullScreen;
         },
     },
 

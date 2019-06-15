@@ -1,11 +1,14 @@
 <template>
-    <button :class="classBtn"
-            @click="$emit('resize')"
+    <button :class="data.class"
+            @click="data.action()"
     >
-        <c-icon :class="classIcon"
+        <c-icon v-for="(icon,i) in data.icons"
+                :key="i"
+                :class="icon.class"
+                :id="icon.id"
                 :sprite="sprite"
-                :icon="icon"
-/>
+                v-show="icon.show"
+        />
     </button>
 </template>
 
@@ -22,17 +25,18 @@ export default {
             type   : Object,
             default: () => { sprite },
         },
-        icon: {
-            type   : String,
-            default: 'fullscreen',
-        },
-        classIcon: {
-            type   : String,
-            default: 'fullscreen--icon icon',
-        },
-        classBtn: {
-            type   : String,
-            default: 'fullscreen--btn btn',
+        data: {
+            type: Object,
+            default() {
+                return {
+                    class : 'btn--fullscreen btn',
+                    action: () => this.$emit('resize'),
+                    icons : [
+                        { id: 'fullscreenOn', class: 'icon--fullscreen-on icon', show: !this.IsFullScreen },
+                        { id: 'fullscreenOff', class: 'icon--fullscreen-off icon', show: this.IsFullScreen },
+                    ],
+                };
+            },
         },
         IsFullScreen: {
             type   : Boolean,

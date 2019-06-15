@@ -1,10 +1,13 @@
 <template>
-    <button :class="classBtn"
-            @click="$emit('stop')"
+    <button :class="data.class"
+            @click="data.action()"
     >
-        <c-icon :sprite="sprite"
-                :icon="icon"
-                :class="classIcon"
+        <c-icon v-for="(icon,i) in data.icons"
+                :key="i"
+                :class="icon.class"
+                :id="icon.id"
+                :sprite="sprite"
+                v-show="icon.show"
         />
     </button>
 </template>
@@ -22,17 +25,17 @@ export default {
             type   : Object,
             default: () => { sprite },
         },
-        icon: {
-            type   : String,
-            default: 'stop',
-        },
-        classIcon: {
-            type   : String,
-            default: 'stop--icon icon',
-        },
-        classBtn: {
-            type   : String,
-            default: 'stop--btn btn',
+        data: {
+            type: Object,
+            default() {
+                return {
+                    class : 'btn--stop btn',
+                    action: () => this.$emit('stop'),
+                    icons : [
+                        { id: 'stop', class: 'icon--stop icon', show: true },
+                    ],
+                };
+            },
         },
     },
 };
