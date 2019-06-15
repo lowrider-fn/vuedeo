@@ -1,6 +1,7 @@
 <template>
-    <div :style="`width:${width}px`">
-        <video ref="vuedeo" class="vuedeo__player"
+    <figure :data-fullscreen="IsFullScreen">
+        <video ref="vuedeo"
+               class="vuedeo__player"
                :controls="controls"
                :autoplay="autoplay"
                :loop="loop"
@@ -8,16 +9,23 @@
                :poster="videoPoster"
                :width="width"
                @click.self="$emit('playOrPause')"
+               :preload="preload"
         >
+            <source src="https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4" type="video/mp4">
             <source v-for="video in videos"
                     :key="video.id"
                     :id="video.id"
                     :src="video.src"
+                    :type="video.type"
             >
+
         </video>
+        <slot name="header"></slot>
+        <slot name="body"></slot>
         <slot name="preloader"></slot>
         <slot name="controls"></slot>
-    </div>
+        <slot name="footer"></slot>
+    </figure>
 </template>
 
 <script>
@@ -30,6 +38,10 @@ export default {
             default: 500,
         },
         autoplay: {
+            type   : Boolean,
+            default: false,
+        },
+        IsFullScreen: {
             type   : Boolean,
             default: false,
         },
@@ -52,6 +64,10 @@ export default {
         videoPoster: {
             type   : String,
             default: '',
+        },
+        preload: {
+            type   : String,
+            default: 'metadata',
         },
     },
     mounted() {

@@ -1,93 +1,57 @@
 <template>
     <div id="app">
-        <vuedeo class="vuedeo"
+        <vuedeo ref="vuedeo" class="vuedeo"
                 :width="width"
                 :videos="videos"
+                :IsFullScreen="IsFullScreen"
                 @ready="ready($event)"
                 @ended="ended($event)"
                 @loaded="loaded($event)"
                 @playOrPause="playOrPause()"
         >
-            <template v-slot:preloader v-if="!player">
+            <template v-slot:header>
+            </template>
+            <template v-slot:body v-if="!player">
             </template>
             <template v-slot:controls>
                 <div class="controls">
-                    <div class="controls__time-wrap">
-                        <div class="controls__time-current">
-                            {{ getCurrentTime }} {{ getDuration }}
-                        </div>
-                    </div>
-                    <div ref="seekbar" class="controls__seekbar-wrap"
-                         @mousedown="grabSeekbar($event)"
-                         @touchstart="grabSeekbar($event)"
-                         @touchmove="moveSeekbar($event)"
-                         @touchend="releaseSeekbar($event)"
-                    >
-                        <div class="controls__seekbar-current"
-                             :style='{ transform: "scaleX(" + getProgressRate + ")" }'
-                        ></div>
-                        <div class="controls__seekbar-back"></div>
-                    </div>
+                    <c-current-time :time="getCurrentTime" />
+                    <c-duration-time :time="getDuration" />
 
-                    <div class="controls__control-panel">
-                        <div class="controls__btn-wrap">
-                            <button class="controls__btn"
-                                    @click="playOrPause()"
-                            >
-                                <img class="controls__icon"
-                                     :src="pauseIcon"
-                                     v-if="isPlaying"
-                                >
-                                <img class="controls__icon"
-                                     :src="playIcon"
-                                     v-else
-                                >
-                            </button>
-                            <button class="controls__btn"
-                                    @click='stop()'
-                            >
-                                <img class="controls__icon" :src="stopIcon">
-                            </button>
-                        </div>
-                        <div class="controls__left-wrap">
-                            <button class="controls__btn"
-                                    @click="muteOrVolume()"
-                            >
-                                <img class="controls__volume-icon"
-                                     :src="mutedIcon"
-                                     v-if="isMuted"
-                                >
-                                <img class="controls__volume-icon"
-                                     :src="volumeIcon"
-                                     v-else
-                                >
-                            </button>
-                            <div ref="volbar" class="controls__volbar-wrap"
-                                 @mousedown="grabVolbar($event)"
-                                 @touchstart="grabVolbar($event)"
-                                 @touchmove="moveVolbar($event)"
-                                 @touchend="releaseVolbar($event)"
-                            >
-                                <div class="controls__seekbar-current"
-                                     :style='{ transform: "scaleX(" + getProgressRate + ")" }'
-                                ></div>
-                                <div class="controls__seekbar-back"></div>
-                            </div>
-                            <button class="controls__btn"
-                                    @click="setScreenSize()"
-                            >
-                                <img class="controls__volume-icon"
-                                     :src="fullScreenIcon"
-                                     v-if="IsFullScreen"
-                                >
-                                <img class="controls__volume-icon"
-                                     :src="exitFullScreenIcon"
-                                     v-else
-                                >
-                            </button>
-                        </div>
-                    </div>
+                    <c-play-pause :isPlaying="isPlaying"
+                                  :sprite="sprite"
+                                  :icon="'play'"
+                                  @playOrPause="playOrPause()"
+                    />
+                    <c-stop :sprite="sprite"
+                            :icon="'stop'"
+                            @stop="stop()"
+                    />
+                    <c-time-bar ref="timebar"
+                                :time="getProgressTime"
+                                @grab="grabSeekbar($event)"
+                                @move="moveSeekbar($event)"
+                                @end="releaseSeekbar($event)"
+                    />
+                    <c-muted :isMuted="isMuted"
+                             :sprite="sprite"
+                             :icon="'muted'"
+                             @mutedOrVolume="mutedOrVolume()"
+                    />
+                    <c-volume-bar ref="volbar"
+                                  :time="getProgressVol"
+                                  @grab="grabVolbar($event)"
+                                  @move="moveVolbar($event)"
+                                  @end="releaseVolbar($event)"
+                    />
+                    <c-fullscreen :IsFullScreen="IsFullScreen"
+                                  :sprite="sprite"
+                                  :icon="'fullscreenOn'"
+                                  @resize="setScreenSize()"
+                    />
                 </div>
+            </template>
+            <template v-slot:footer>
             </template>
         </vuedeo>
     </div>
@@ -95,13 +59,16 @@
 
 <script>
 import Vuedeo from './components/vuedeo';
-import pauseIcon from '@/assets/icons/pause.svg';
-import playIcon from '@/assets/icons/play.svg';
-import stopIcon from '@/assets/icons/stop.svg';
-import mutedIcon from '@/assets/icons/mute.svg';
-import volumeIcon from '@/assets/icons/volume.svg';
-import fullScreenIcon from '@/assets/icons/full-screen.svg';
-import exitFullScreenIcon from '@/assets/icons/exit-full-screen.svg';
+import PlayPause from './components/controls/c-play-pause';
+import Stop from './components/controls/c-stop';
+import Muted from './components/controls/c-muted';
+import Fullscreen from './components/controls/c-fullscreen';
+import DurationTime from './components/controls/c-duration-time';
+import CurrentTime from './components/controls/c-current-time';
+import Timebar from './components/controls/c-time-bar';
+import Volbar from './components/controls/c-volume-bar';
+
+import sprite from './sprite';
 
 const debounce = (callback, duration) => {
     let timer;
@@ -115,37 +82,50 @@ const debounce = (callback, duration) => {
 export default {
     name      : 'App',
     components: {
-        vuedeo: Vuedeo,
+        vuedeo           : Vuedeo,
+        'c-play-pause'   : PlayPause,
+        'c-stop'         : Stop,
+        'c-fullscreen'   : Fullscreen,
+        'c-muted'        : Muted,
+        'c-duration-time': DurationTime,
+        'c-current-time' : CurrentTime,
+        'c-time-bar'     : Timebar,
+        'c-volume-bar'   : Volbar,
     },
     data: () => ({
-        pauseIcon,
-        playIcon,
-        stopIcon,
-        volumeIcon,
-        mutedIcon,
-        exitFullScreenIcon,
-        fullScreenIcon,
+        sprite,
 
-        player           : null,
-        seekbar          : null,
+        player: null,
+
         seekbarWidth     : 0,
         seekbarOffsetX   : 0,
         time             : 0,
         duration         : 0,
-        isPlaying        : false,
         isGrabbingSeekbar: false,
-        isMuted          : false,
-        IsFullScreen     : false,
+
+        volbarWidth     : 0,
+        volbarOffsetX   : 0,
+        volume          : 0,
+        isGrabbingVolbar: false,
+
+        isPlaying   : false,
+        isMuted     : false,
+        IsFullScreen: false,
 
         width : 500,
         videos: [{
-            id : 'rt',
-            src: 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
+            id  : 'rt',
+            src : 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
+            type: 'video/mp4',
         }],
     }),
+
     computed: {
-        getProgressRate() {
+        getProgressTime() {
             return this.time / this.duration;
+        },
+        getProgressVol() {
+            return this.volume;
         },
         getCurrentTime() {
             return this.convertSecondsToTime(this.time);
@@ -155,29 +135,49 @@ export default {
         },
     },
     mounted() {
+        console.log(this.sprite);
+
         window.addEventListener('resize', debounce(() => {
+            this.resizeLayoutVolbar();
             this.resizeLayoutSeekbar();
-        }), 100);
+        }), 10);
         document.addEventListener('mousemove', (e) => {
+            this.moveVolbar(e);
             this.moveSeekbar(e);
         });
         document.addEventListener('mouseup', (e) => {
+            this.releaseVolbar(e);
             this.releaseSeekbar(e);
         });
+        if (document.addEventListener) {
+            // As the video is playing, update the progress bar
+            // video.addEventListener('timeupdate', () => {
+            //     // For mobile browsers, ensure that the progress element's max attribute is set
+            //     if (!progress.getAttribute('max')) progress.setAttribute('max', video.duration);
+            //     progress.value = video.currentTime;
+            //     progressBar.style.width = `${Math.floor((video.currentTime / video.duration) * 100)}%`;
+            // });
+        }
     },
     methods: {
         ready(player) {
             this.player = player;
-            this.seekbar = this.$refs.seekbar;
-            this.resizeLayoutSeekbar();
         },
+
         loaded(e) {
             this.duration = e;
+            this.volume = this.player.volume;
         },
+
         ended() {
             this.player.currentTime = 0;
             this.isPlaying = false;
         },
+
+        playOrPause() {
+            this.isPlaying ? this.pause() : this.play();
+        },
+
         play() {
             this.player.play();
             this.isPlaying = true;
@@ -187,18 +187,18 @@ export default {
             this.player.pause();
             this.isPlaying = false;
         },
-        playOrPause() {
-            this.isPlaying ? this.pause() : this.play();
-        },
+
         stop() {
             this.player.currentTime = 0;
             this.pause();
         },
+
         toLoop() {
             this.time = this.player.currentTime;
             if (!this.isPlaying) return;
             requestAnimationFrame(() => this.toLoop());
         },
+
         grabSeekbar(e) {
             e.preventDefault();
             this.isGrabbingSeekbar = true;
@@ -218,9 +218,33 @@ export default {
             if (this.isPlaying) this.player.play();
         },
         resizeLayoutSeekbar() {
-            this.seekbarWidth = this.seekbar.clientWidth;
-            this.seekbarOffsetX = this.seekbar.getBoundingClientRect().left;
+            const seekbar = this.$refs.timebar.$el;
+            this.seekbarWidth = seekbar.clientWidth;
+            this.seekbarOffsetX = seekbar.getBoundingClientRect().left;
         },
+
+        grabVolbar(e) {
+            e.preventDefault();
+            this.isGrabbingVolbar = true;
+            this.player.volume = e.layerX / this.volbarWidth;
+            this.volume = this.player.volume;
+        },
+        moveVolbar(e) {
+            e.preventDefault();
+            if (!this.isGrabbingVolbar) return;
+            this.player.volume = e.layerX / this.volbarWidth;
+            this.volume = this.player.volume;
+        },
+        releaseVolbar(e) {
+            e.preventDefault();
+            this.isGrabbingVolbar = false;
+        },
+        resizeLayoutVolbar() {
+            const volbar = this.$refs.volbar.$el;
+            this.volbarWidth = volbar.clientWidth;
+            this.volbarbarOffsetX = volbar.getBoundingClientRect().left;
+        },
+
         convertSecondsToTime(time) {
             let seconds = Math.floor(time % 60);
 
@@ -230,25 +254,117 @@ export default {
 
             return `${minutes}:${seconds}`;
         },
-        muteOrVolume() {
+
+        mutedOrVolume() {
             this.player.muted = !this.player.muted;
             this.isMuted = this.player.muted;
         },
+
         setScreenSize() {
-            if (this.IsFullScreen) {
-                if (document.cancelFullScreen) document.cancelFullScreen();
-                else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-            } else if (this.player.requestFullScreen) this.player.requestFullScreen();
-            else if (this.player.webkitRequestFullScreen) this.player.webkitRequestFullScreen();
-            else if (this.player.mozRequestFullScreen) this.player.mozRequestFullScreen();
-            this.IsFullScreen = !this.IsFullScreen;
+            this.IsFullScreen ? this.exitFullScreen() : this.setFullScreen();
+            this.setIsFullScreen();
+        },
+        setFullScreen() {
+            const vuedeo = this.$refs.vuedeo.$el;
+            if (vuedeo.requestFullScreen) vuedeo.requestFullScreen();
+            else if (vuedeo.webkitRequestFullScreen) vuedeo.webkitRequestFullScreen();
+            else if (vuedeo.mozRequestFullScreen) vuedeo.mozRequestFullScreen();
+        },
+        exitFullScreen() {
+            if (document.cancelFullScreen) document.cancelFullScreen();
+            else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        },
+        setIsFullScreen() {
+            this.IsFullScreen = !this.isFullscreen;
         },
     },
+
 };
+
 </script>
 
 <style lang="scss">
+    .btn{
+        -webkit-transition:all, 0.3s, ease-in-out;
+        -o-transition:all, 0.3s, ease-in-out;
+        transition:all, 0.3s, ease-in-out;
+        background : transparent;
+        border : none;
+        outline : none;
+        cursor : pointer;
+        padding : 0;
+        display : inline-block;
+        &:hover{
+            opacity : 0.8;
+        }
+        &:active{
+            opacity : 0.6;
+        }
+        &:disabled{
+            opacity : 0.6;
+        }
+    }
+    .icon{
+        width: 40px;
+        height: 40px;
+        color: white
+    }
+    .icon svg{
+        width: 40px;
+        height: 40px;
+    }
+
+figure {
+	height:auto;
+}
+figcaption {
+	display:block;
+}
+video {
+	width:100%;
+    height:auto;
+    cursor: pointer;
+    &::-webkit-media-controls {
+        display:none !important;
+    }
+}
+
+/* fullscreen */
+html:-ms-fullscreen {
+	width:100%;
+}
+:-webkit-full-screen {
+	background-color:transparent;
+}
+/* hide controls on fullscreen with WebKit */
+figure[data-fullscreen=true] video::-webkit-media-controls {
+	display:none !important;
+}
+figure[data-fullscreen=true] {
+	max-width:100%;
+	width:100%;
+	margin:0;
+	padding:0;
+}
+figure[data-fullscreen=true] video {
+	height:auto;
+}
+figure[data-fullscreen=true] figcaption {
+	display:none;
+}
+figure[data-fullscreen=true] .controls {
+	position:absolute;
+	bottom:2%;
+	width:100%;
+	z-index:2147483647;
+}
+figure[data-fullscreen=true] .controls li {
+	width:5%;
+}
+figure[data-fullscreen=true] .controls .progress {
+	width:68%;
+}
 video{
     cursor: pointer;
     &::-webkit-media-controls {
@@ -294,7 +410,8 @@ video{
         cursor: pointer;
         position: relative;
         margin-bottom: 10px;
-        padding: 5px 0 10px;
+        padding: 10px 0;
+        margin: 0 10px;
         }
         &-current, &-back {
         height: 3px;
@@ -304,10 +421,20 @@ video{
         left: 0;
         }
         &-current {
+            // position: relative;
+            // top: 5px;
         z-index: 2;
         background-color: red;
         transform: scaleX(0);
         transform-origin: left;
+        &:after{
+            content:'';
+            position: absolute;
+            background:white;
+            width: 30px;
+            height: 10px;
+            right: 0;
+        }
         }
         &-back {
         background-color: white;
@@ -331,44 +458,18 @@ video{
         position: relative;
         cursor: pointer;
         width: 80%;
+        padding: 10px 0;
+        margin: 0 10px;
         justify-content: space-between
     }
     &__btn {
-    transition:all, 0.3s, ease-in-out;
-    background : transparent;
-    border : none;
-    outline : none;
-    cursor : pointer;
-    padding : 0;
-    display : inline-block;
-    &:hover{
-        opacity : 0.8;
-    }
-    &:active{
-        opacity : 0.6;
-    }
-    &:disabled{
-        opacity : 0.6;
-    }
+
     }
     &__icon{
         width: 40px;
     }
     &__volume-icon{
         width: 20px;
-    }
-    &__time {
-        &-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end
-        }
-        &-current {
-            color: white;
-        margin-right: 0.25em;
-        font-size: 12px
-
-        }
     }
 }
 
