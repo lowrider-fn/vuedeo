@@ -88,6 +88,7 @@ const setSettings = {
                     poster      : '',
                     preload     : 'metadata',
                     controls    : true,
+                    class       : 'video',
                     videos      : this.videos,
                 },
             };
@@ -95,4 +96,4 @@ const setSettings = {
 
     },
 };
-export { setSettings };
+export default setSettings;

@@ -1,12 +1,11 @@
 <template>
     <div id="app">
-        <player ref="player" class="player"
-                :settings="setData.settings"
-                @ready="ready($event)"
-                @ended="ended($event)"
-                @loaded="loaded($event)"
-                @click="playOrPause();
-                        $emit('click',$event);"
+        <b-player ref="player" class="player"
+                  :settings="setData.settings"
+                  @ready="ready($event)"
+                  @ended="ended($event)"
+                  @loaded="loaded($event)"
+                  @click="playOrPause($event) "
         >
             <template v-slot:header>
                 <slot name="header"></slot>
@@ -53,18 +52,13 @@
             <template v-slot:footer>
                 <slot name="footer"></slot>
             </template>
-        </player>
+        </b-player>
     </div>
 </template>
 
 <script>
-import Player from './player';
-import Time from './controls/c-time';
-import Bar from './controls/c-bar';
-
-import Btn from './controls/c-btn';
 import sprite from './sprite';
-import { setSettings } from './m-set-settings';
+import setSettings from './m-set-settings';
 
 const debounce = (callback, duration) => {
     let timer;
@@ -75,10 +69,10 @@ const debounce = (callback, duration) => {
 };
 export default {
     components: {
-        player  : Player,
-        'c-btn' : Btn,
-        'c-time': Time,
-        'c-bar' : Bar,
+        'b-player': () => import('./blocks/b-player'),
+        'c-btn'   : () => import('./controls/c-btn'),
+        'c-time'  : () => import('./controls/c-time'),
+        'c-bar'   : () => import('./controls/c-bar'),
     },
     mixins: [setSettings],
     props : {
@@ -154,8 +148,6 @@ export default {
     },
     methods: {
         ready(player) {
-            console.log(this);
-
             this.player = player;
             this.$emit('ready', this.player);
         },
@@ -171,8 +163,9 @@ export default {
             this.isPlaying = false;
         },
 
-        playOrPause() {
+        playOrPause(e) {
             this.isPlaying ? this.pause() : this.play();
+            this.$emit('click');
         },
 
         play() {
@@ -286,3 +279,173 @@ export default {
 };
 
 </script>
+<style lang="scss" >
+    .video {
+        cursor: pointer;
+        width: 500px;
+        -webkit-transition: all .3s ease;
+        -o-transition: all .3s ease;
+        transition: all .3s ease;
+        &:hover .controls {
+            -webkit-transform: translateY(0);
+                -ms-transform: translateY(0);
+                    transform: translateY(0);
+        }
+        &::-webkit-media-controls {
+            display:none !important;
+        }
+    }
+    .fullscreen-on{
+        width:100%;
+        height:auto;
+        .video{
+            width: 100%;
+        }
+        .icon--fullscreen{
+            width: 24px;
+            height: 24px;
+        }
+        .btn--fullscreen{
+            width: 24px;
+            height: 24px;
+        }
+    }
+    .player{
+        overflow: hidden;
+        position: relative;
+        width: 500px;
+        &:hover .controls {
+            -webkit-transform: translateY(0);
+                -ms-transform: translateY(0);
+                    transform: translateY(0);
+        }
+    }
+
+    .controls{
+        -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+        position:absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        padding: 20px 5px 5px;
+        -webkit-transform: translateY(100%) translateY(1px);
+            -ms-transform: translateY(100%) translateY(1px);
+                transform: translateY(100%) translateY(1px);;
+        -webkit-transition: all .5s ease;;
+        -o-transition: all .5s ease;;
+        transition: all .5s ease;
+        &__row{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: justify;
+                -ms-flex-pack: justify;
+                    justify-content: space-between;
+            -webkit-box-align: center;
+                -ms-flex-align: center;
+                    align-items: center;
+            &-left{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: center;
+                    -ms-flex-align: center;
+                        align-items: center;
+                width: 65%;
+                margin-left: -5px;
+            }
+            &-right{
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .btn{
+        -webkit-transition:all, 0.3s, ease-in-out;
+        -o-transition:all, 0.3s, ease-in-out;
+        transition:all, 0.3s, ease-in-out;
+        background : transparent;
+        border : none;
+        outline : none;
+        cursor : pointer;
+        padding : 0;
+        display : inline-block;
+        width: 30px;
+        height: 30px;
+        &:hover{
+            opacity : 0.8;
+        }
+        &:active{
+            opacity : 0.6;
+        }
+        &:disabled{
+            opacity : 0.6;
+        }
+        &--muted{
+            margin-left: 20px;
+            width: 15px;
+            height: 15px;
+        }
+        &--fullscreen{
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    .icon{
+        width: 40px;
+        height: 40px;
+        color: white;
+        &--fullscreen-on{
+            width: 20px;
+            height: 20px;
+        }
+        &--volume{
+            width: 15px;
+            height: 15px;
+        }
+        &--muted{
+            width: 15px;
+            height: 15px;
+        }
+    }
+
+    .bar {
+        cursor: pointer;
+        position: relative;
+        margin-bottom: 10px;
+        padding: 10px 0 ;
+        margin: 0 5px;
+        &__current, &__back {
+            height: 3px;
+            position: absolute;
+            top: 31%;
+            right: 0;
+            left: 0;
+        }
+        &__current {
+            z-index: 2;
+            background-color: red;
+            -webkit-transform: scaleX(0);
+                -ms-transform: scaleX(0);
+                    transform: scaleX(0);
+            -webkit-transform-origin: left;
+                -ms-transform-origin: left;
+                    transform-origin: left;
+        }
+        &__back {
+            background-color: white;
+        }
+        &.vol{
+            width: 30%;
+        }
+    }
+
+    .time-seconds{
+        padding: 5px 5px;
+        font-size: 14px;
+        color: white
+    }
+</style>

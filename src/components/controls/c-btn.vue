@@ -3,7 +3,7 @@
         <button :class="data.class"
                 @click="data.action($event)"
         >
-            <c-icon v-for="(icon,i) in data.icons"
+            <b-icon v-for="(icon,i) in data.icons"
                     :key="i"
                     :class="icon.class"
                     :id="icon.id"
@@ -15,11 +15,11 @@
 </template>
 
 <script>
-import Icon from './c-icon';
+import { Icon } from '../blocks';
 
 export default {
     components: {
-        'c-icon': Icon,
+        'b-icon': Icon,
     },
     props: {
         sprite: {

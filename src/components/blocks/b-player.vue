@@ -2,7 +2,7 @@
     <div :class="settings.isFullScreen ? 'fullscreen-on' : ''">
         <slot name="header"></slot>
         <video ref="vuedeo"
-               class="vuedeo__player"
+               :class="settings.class"
                :controls="false"
                :autoplay="settings.autoplay"
                :loop="settings.loop"
@@ -41,6 +41,7 @@ export default {
                 poster      : '',
                 preload     : 'metadata',
                 controls    : true,
+                class       : 'player',
                 videos      : [],
             }),
         },
@@ -59,3 +60,20 @@ export default {
     },
 };
 </script>
+<style lang="scss">
+    slot{
+        &[name="header"]{
+            z-index: 2147483649;
+        }
+        &[name="header"]{
+            z-index: 2147483648;
+        }
+        &[name="controls"]{
+            z-index: 2147483650;
+        }
+        &[name="footer"]{
+            z-index: 2147483649;
+        }
+
+    }
+</style>

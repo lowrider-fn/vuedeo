@@ -6,7 +6,7 @@
          @touchend="data.bar.actionEnd($event)"
     >
         <div :class="data.current.class"
-             :style='{ transform: "scaleX(" + data.current.scale + ")" }'
+             :style='{ transform: "scaleX(" + setScale + ")" }'
         ></div>
         <div :class="data.back.class"></div>
     </div>
@@ -34,6 +34,14 @@ export default {
                     },
                 };
             },
+        },
+    },
+    computed: {
+        setScale() {
+            const { scale } = this.data.current;
+            if (scale > 1) return 1;
+            if (scale < 0) return 0;
+            return scale;
         },
     },
 };
