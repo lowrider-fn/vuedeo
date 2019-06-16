@@ -1,7 +1,5 @@
 <template>
-    <svg :class="className"
-         v-html="currentIcon"
-    />
+    <svg v-html="currentIcon" />
 </template>
 
 <script>
@@ -11,13 +9,8 @@ export default {
             type    : String,
             required: true,
         },
-        className: {
-            type   : String,
-            default: '',
-        },
         sprite: {
-            type   : Object,
-            default: null,
+            type: Object,
         },
     },
     computed: {

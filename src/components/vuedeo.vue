@@ -1,67 +1,57 @@
 <template>
     <div id="app">
         <player ref="player" class="player"
-                :videos="videos"
-                :IsFullScreen="IsFullScreen"
+                :settings="setData.settings"
                 @ready="ready($event)"
                 @ended="ended($event)"
                 @loaded="loaded($event)"
-                @playOrPause="playOrPause()"
+                @click="playOrPause();
+                        $emit('click',$event);"
         >
             <template v-slot:header>
+                <slot name="header"></slot>
             </template>
-            <template v-slot:body v-if="!player">
+            <template v-slot:body>
+                <slot name="body"></slot>
             </template>
             <template v-slot:controls>
-                <div class="controls">
-                    <c-bar ref="timebar"
-                           :scale="getProgressTime"
-                           :data="bar.timebar"
-                           @grab="grabSeekbar($event)"
-                           @move="moveSeekbar($event)"
-                           @end="releaseSeekbar($event)"
-                    />
-                    <div class="controls__row">
-                        <div class="controls__row-left">
-                            <c-btn :isShow="isPlaying"
-                                   :sprite="sprite"
-                                   :data="button.playControl"
-                                   @click="playOrPause()"
-                            />
-                            <c-btn :sprite="sprite"
-                                   :data="button.stop"
-                                   @click="stop()"
-                            />
-                            <c-btn :isShow="isMuted"
-                                   :sprite="sprite"
-                                   :data="button.muted"
-                                   @click="mutedOrVolume()"
-                            />
-                            <c-bar ref="volbar"
-                                   :scale="volume"
-                                   :data="bar.volbar"
-                                   @grab="dragVolbar($event)"
-                                   @move="moveVolbar($event)"
-                                   @end="releaseVolbar($event)"
-                            />
-                            <c-time
-                                :data="timeSeconds.current"
-                            />
-                            <c-time
-                                :data="timeSeconds.duration"
-                            />
-                        </div>
-                        <div class="controls__row-right">
-                            <c-btn :isShow="IsFullScreen"
-                                   :sprite="sprite"
-                                   :data="button.fullscreen"
-                                   @click="setScreenSize()"
-                            />
+                <slot name="controls">
+                    <div class="controls">
+                        <c-bar ref="timebar"
+                               :data="setData.bar.timebar"
+                        />
+                        <div class="controls__row">
+                            <div class="controls__row-left">
+                                <c-btn :sprite="sprite"
+                                       :data="setData.button.playControl"
+                                />
+                                <c-btn :sprite="sprite"
+                                       :data="setData.button.stop"
+                                />
+                                <c-btn :sprite="sprite"
+                                       :data="setData.button.muted"
+                                />
+                                <c-bar ref="volbar"
+                                       :data="setData.bar.volbar"
+                                />
+                                <c-time
+                                    :data="setData.timeSeconds.current"
+                                />
+                                <c-time
+                                    :data="setData.timeSeconds.duration"
+                                />
+                            </div>
+                            <div class="controls__row-right">
+                                <c-btn :sprite="sprite"
+                                       :data="setData.button.fullscreen"
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                </slot>
             </template>
             <template v-slot:footer>
+                <slot name="footer"></slot>
             </template>
         </player>
     </div>
@@ -74,27 +64,33 @@ import Bar from './controls/c-bar';
 
 import Btn from './controls/c-btn';
 import sprite from './sprite';
+import { setSettings } from './m-set-settings';
 
 const debounce = (callback, duration) => {
     let timer;
     return (e) => {
         clearTimeout(timer);
-        timer = setTimeout(() => {
-            callback(e);
-        }, duration);
+        timer = setTimeout(() => { callback(e) }, duration);
     };
 };
 export default {
-    name      : 'App',
     components: {
         player  : Player,
         'c-btn' : Btn,
         'c-time': Time,
         'c-bar' : Bar,
     },
+    mixins: [setSettings],
+    props : {
+        data: {
+            type: Object,
+        },
+        sprite: {
+            type   : Object,
+            default: () => sprite,
+        },
+    },
     data: () => ({
-        sprite,
-
         player: null,
 
         seekbarWidth    : 0,
@@ -110,97 +106,18 @@ export default {
 
         isPlaying   : false,
         isMuted     : false,
-        IsFullScreen: false,
+        isFullScreen: false,
 
         videos: [{
             id  : 'rt',
             src : 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
             type: 'video/mp4',
         }],
-
     }),
 
     computed: {
-        button() {
-            return {
-                fullscreen: {
-                    class : 'btn--fullscreen btn',
-                    action: () => this.setScreenSize(),
-                    icons : [
-                        { id: 'fullscreenOn', class: 'icon--fullscreen-on icon', show: !this.IsFullScreen },
-                        { id: 'fullscreenOff', class: 'icon--fullscreen icon', show: this.IsFullScreen },
-                    ],
-                },
-                playControl: {
-                    class : 'btn--play-control btn',
-                    action: () => this.playOrPause(),
-                    icons : [
-                        { id: 'play', class: 'icon--play icon', show: !this.isPlaying },
-                        { id: 'pause', class: 'icon--pause icon', show: this.isPlaying },
-                    ],
-                },
-                stop: {
-                    class : 'btn--stop btn',
-                    action: () => this.stop(),
-                    icons : [
-                        { id: 'stop', class: 'icon--stop icon', show: true },
-                    ],
-                },
-                muted: {
-                    class : 'btn--muted btn',
-                    action: () => this.mutedOrVolume(),
-                    icons : [
-                        { id: 'volume', class: 'icon--volume icon', show: !this.isMuted },
-                        { id: 'muted', class: 'icon--muted icon', show: this.isMuted },
-                    ],
-                },
-            };
-        },
-        bar() {
-            return {
-                timebar: {
-                    bar: {
-                        class     : 'time bar',
-                        actionDrag: e => this.grabSeekbar(e),
-                        actionMove: e => this.moveSeekbar(e),
-                        actionEnd : e => this.releaseSeekbar(e),
-                    },
-                    current: {
-                        class: 'time__current bar__current',
-                        scale: this.getProgressTime,
-                    },
-                    back: {
-                        class: 'time__back bar__back',
-                    },
-                },
-                volbar: {
-                    bar: {
-                        class     : 'vol bar',
-                        actionDrag: e => this.dragVolbar(e),
-                        actionMove: e => this.moveVolbar(e),
-                        actionEnd : e => this.releaseVolbar(e),
-                    },
-                    current: {
-                        class: 'vol__current bar__current',
-                        scale: this.volume,
-                    },
-                    back: {
-                        class: 'vol__back bar__back',
-                    },
-                },
-            };
-        },
-        timeSeconds() {
-            return {
-                current: {
-                    class: 'time-seconds time--current',
-                    time : this.getCurrentTime,
-                },
-                duration: {
-                    class: 'time-seconds time--duration',
-                    time : this.getDuration,
-                },
-            };
+        setData() {
+            return this.data || this.setSettings;
         },
         getProgressTime() {
             return this.currentTime / this.duration;
@@ -237,12 +154,16 @@ export default {
     },
     methods: {
         ready(player) {
+            console.log(this);
+
             this.player = player;
+            this.$emit('ready', this.player);
         },
 
         loaded(e) {
             this.duration = e;
             this.volume = this.player.volume;
+            this.$emit('loaded', this.player);
         },
 
         ended() {
@@ -258,15 +179,18 @@ export default {
             this.player.play();
             this.isPlaying = true;
             this.toLoop();
+            this.$emit('play');
         },
         pause() {
             this.player.pause();
             this.isPlaying = false;
+            this.$emit('pause');
         },
 
         stop() {
             this.player.currentTime = 0;
             this.pause();
+            this.$emit('stop');
         },
 
         toLoop() {
@@ -335,11 +259,13 @@ export default {
         mutedOrVolume() {
             this.player.muted = !this.player.muted;
             this.isMuted = this.player.muted;
+            this.$emit('muted', this.isMuted);
         },
 
         setScreenSize() {
-            this.IsFullScreen ? this.exitFullScreen() : this.setFullScreen();
+            this.isFullScreen ? this.exitFullScreen() : this.setFullScreen();
             this.setIsFullScreen();
+            this.$emit('resize', this.isFullScreen);
         },
         setFullScreen() {
             const player = this.$refs.player.$el;
@@ -353,7 +279,7 @@ export default {
             else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
         },
         setIsFullScreen() {
-            this.IsFullScreen = !this.IsFullScreen;
+            this.isFullScreen = !this.isFullScreen;
         },
     },
 

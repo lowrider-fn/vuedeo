@@ -1,29 +1,27 @@
 <template>
-    <div :class="IsFullScreen ? 'fullscreen-on' : ''">
+    <div :class="settings.isFullScreen ? 'fullscreen-on' : ''">
         <slot name="header"></slot>
         <video ref="vuedeo"
                class="vuedeo__player"
-               :controls="controls"
-               :autoplay="autoplay"
-               :loop="loop"
-               :muted="muted"
-               :poster="videoPoster"
-               @click.self="$emit('playOrPause')"
-               :preload="preload"
+               :controls="false"
+               :autoplay="settings.autoplay"
+               :loop="settings.loop"
+               :muted="settings.muted"
+               :poster="settings.poster"
+               @click.self="$emit('click',$event)"
+               :preload="settings.preload"
         >
-            <source src="https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4" type="video/mp4">
-            <source v-for="video in videos"
-                    :key="video.id"
+
+            <source v-for="(video,i) in settings.videos"
+                    :key="i"
                     :id="video.id"
                     :src="video.src"
                     :type="video.type"
             >
 
         </video>
-
         <slot name="body"></slot>
-        <slot name="preloader"></slot>
-        <slot name="controls"></slot>
+        <slot name="controls" v-if="settings.controls"></slot>
         <slot name="footer"></slot>
     </div>
 </template>
@@ -33,45 +31,25 @@
 export default {
     name : 'Vuedeo',
     props: {
-        IsFullScreen: {
-            type   : Boolean,
-            default: false,
-        },
-        autoplay: {
-            type   : Boolean,
-            default: false,
-        },
-        loop: {
-            type   : Boolean,
-            default: false,
-        },
-        controls: {
-            type   : Boolean,
-            default: false,
-        },
-        muted: {
-            type   : Boolean,
-            default: false,
-        },
-        videos: {
-            type   : Array,
-            default: () => [],
-        },
-        videoPoster: {
-            type   : String,
-            default: '',
-        },
-        preload: {
-            type   : String,
-            default: 'metadata',
+        settings: {
+            type   : Object,
+            default: () => ({
+                isFullScreen: false,
+                autoplay    : false,
+                loop        : false,
+                muted       : false,
+                poster      : '',
+                preload     : 'metadata',
+                controls    : true,
+                videos      : [],
+            }),
         },
     },
     mounted() {
         const { vuedeo } = this.$refs;
 
-        this.$emit('ready', vuedeo);
-
         vuedeo.addEventListener('loadedmetadata', (e) => {
+            this.$emit('ready', vuedeo);
             this.$emit('loaded', e.target.duration);
         });
 

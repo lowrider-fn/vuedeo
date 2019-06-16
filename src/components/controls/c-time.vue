@@ -8,13 +8,11 @@
 export default {
     props: {
         data: {
-            type: Object,
-            default() {
-                return {
-                    class: 'time-seconds',
-                    time : '00:00',
-                };
-            },
+            type   : Object,
+            default: () => ({
+                class: 'time-seconds',
+                time : '00:00',
+            }),
         },
     },
 };

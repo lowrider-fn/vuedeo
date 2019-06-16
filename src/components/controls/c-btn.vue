@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import sprite from '../sprite';
 import Icon from './c-icon';
 
 export default {
@@ -24,8 +23,7 @@ export default {
     },
     props: {
         sprite: {
-            type   : Object,
-            default: () => { sprite },
+            type: Object,
         },
         data: {
             type: Object,
@@ -34,14 +32,10 @@ export default {
                     class : 'btn',
                     action: e => this.$emit('click', e),
                     icons : [
-                        { id: 'icon', class: 'icon', show: this.isShow },
+                        { id: 'icon', class: 'icon', show: true },
                     ],
                 };
             },
-        },
-        isShow: {
-            type   : Boolean,
-            default: true,
         },
     },
 };

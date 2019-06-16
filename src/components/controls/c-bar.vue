@@ -15,10 +15,6 @@
 <script>
 export default {
     props: {
-        scale: {
-            type   : Number,
-            default: 0,
-        },
         data: {
             type: Object,
             default() {
@@ -31,7 +27,7 @@ export default {
                     },
                     current: {
                         class: 'bar__current',
-                        scale: this.scale,
+                        scale: 0,
                     },
                     back: {
                         class: 'bar__back',
