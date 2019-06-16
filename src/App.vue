@@ -1,74 +1,12 @@
 <template>
     <div id="app">
-        <vuedeo ref="vuedeo" class="vuedeo"
-                :width="width"
-                :videos="videos"
-                :IsFullScreen="IsFullScreen"
-                @ready="ready($event)"
-                @ended="ended($event)"
-                @loaded="loaded($event)"
-                @playOrPause="playOrPause()"
-        >
-            <template v-slot:header>
-            </template>
-            <template v-slot:body v-if="!player">
-            </template>
-            <template v-slot:controls>
-                <div class="controls">
-                    <c-time
-                        :data="time.current"
-                    />
-                    <c-time
-                        :data="time.duration"
-                    />
-                    <c-btn :isShow="isPlaying"
-                           :sprite="sprite"
-                           :data="button.playControl"
-                           @click="playOrPause()"
-                    />
-                    <c-btn :sprite="sprite"
-                           :data="button.stop"
-                           @click="stop()"
-                    />
-                    <c-bar ref="timebar"
-                           :scale="getProgressTime"
-                           :data="bar.timebar"
-                           @grab="grabSeekbar($event)"
-                           @move="moveSeekbar($event)"
-                           @end="releaseSeekbar($event)"
-                    />
-                    <c-btn :iShow="isMuted"
-                           :sprite="sprite"
-                           :data="button.muted"
-                           @click="mutedOrVolume()"
-                    />
-                    <c-bar ref="volbar"
-                           :scale="volume"
-                           :data="bar.volbar"
-                           @grab="grabVolbar($event)"
-                           @move="moveVolbar($event)"
-                           @end="releaseVolbar($event)"
-                    />
-                    <c-btn :IsShow="IsFullScreen"
-                           :sprite="sprite"
-                           :data="button.fullscreen"
-                           @click="setScreenSize()"
-                    />
-                </div>
-            </template>
-            <template v-slot:footer>
-            </template>
-        </vuedeo>
+        <vuedeo refs="vuedeo" />
     </div>
 </template>
 
 <script>
-import Vuedeo from './components/vuedeo';
-import Time from './components/controls/c-time';
-import Bar from './components/controls/c-bar';
 
-import Btn from './components/controls/c-btn';
-import sprite from './sprite';
+import vuedeo from './components/vuedeo';
 
 const debounce = (callback, duration) => {
     let timer;
@@ -82,32 +20,27 @@ const debounce = (callback, duration) => {
 export default {
     name      : 'App',
     components: {
-        vuedeo  : Vuedeo,
-        'c-btn' : Btn,
-        'c-time': Time,
-        'c-bar' : Bar,
+        vuedeo,
     },
     data: () => ({
-        sprite,
 
         player: null,
 
-        seekbarWidth     : 0,
-        seekbarOffsetX   : 0,
-        currentTime      : 0,
-        duration         : 0,
-        isGrabbingSeekbar: false,
+        seekbarWidth    : 0,
+        seekbarOffsetX  : 0,
+        currentTime     : 0,
+        duration        : 0,
+        isDragingSeekbar: false,
 
-        volbarWidth     : 0,
-        volbarOffsetX   : 0,
-        volume          : 0,
-        isGrabbingVolbar: false,
+        volbarWidth    : 0,
+        volbarOffsetX  : 0,
+        volume         : 0,
+        isDragingVolbar: false,
 
         isPlaying   : false,
         isMuted     : false,
         IsFullScreen: false,
 
-        width : 500,
         videos: [{
             id  : 'rt',
             src : 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
@@ -172,7 +105,7 @@ export default {
                 volbar: {
                     bar: {
                         class     : 'vol bar',
-                        actionDrag: e => this.grabVolbar(e),
+                        actionDrag: e => this.dragVolbar(e),
                         actionMove: e => this.moveVolbar(e),
                         actionEnd : e => this.releaseVolbar(e),
                     },
@@ -186,14 +119,14 @@ export default {
                 },
             };
         },
-        time() {
+        timeSeconds() {
             return {
                 current: {
-                    class: 'time time--current',
+                    class: 'time-seconds time--current',
                     time : this.getCurrentTime,
                 },
                 duration: {
-                    class: 'time time--duration',
+                    class: 'time-seconds time--duration',
                     time : this.getDuration,
                 },
             };
@@ -209,18 +142,18 @@ export default {
         },
     },
     mounted() {
-        window.addEventListener('resize', debounce(() => {
-            this.resizeLayoutVolbar();
-            this.resizeLayoutSeekbar();
-        }), 10);
-        document.addEventListener('mousemove', (e) => {
-            this.moveVolbar(e);
-            this.moveSeekbar(e);
-        });
-        document.addEventListener('mouseup', (e) => {
-            this.releaseVolbar(e);
-            this.releaseSeekbar(e);
-        });
+        // window.addEventListener('resize', debounce(() => {
+        //     this.resizeLayoutVolbar();
+        //     this.resizeLayoutSeekbar();
+        // }), 100);
+        // document.addEventListener('mousemove', (e) => {
+        //     this.moveVolbar(e);
+        //     this.moveSeekbar(e);
+        // });
+        // document.addEventListener('mouseup', (e) => {
+        //     this.releaseVolbar(e);
+        //     this.releaseSeekbar(e);
+        // });
         if (document.addEventListener) {
             // As the video is playing, update the progress bar
             // video.addEventListener('timeupdate', () => {
@@ -273,20 +206,20 @@ export default {
 
         grabSeekbar(e) {
             e.preventDefault();
-            this.isGrabbingSeekbar = true;
+            this.isDragingSeekbar = true;
             this.player.currentTime = e.layerX / this.seekbarWidth * this.duration;
             this.currentTime = this.player.currentTime;
             this.player.pause();
         },
         moveSeekbar(e) {
             e.preventDefault();
-            if (!this.isGrabbingSeekbar) return;
+            if (!this.isDragingSeekbar) return;
             this.player.currentTime = (e.clientX - this.seekbarOffsetX - window.pageXOffset) / this.seekbarWidth * this.duration;
             this.currentTime = this.player.currentTime;
         },
         releaseSeekbar(e) {
             e.preventDefault();
-            this.isGrabbingSeekbar = false;
+            this.isDragingSeekbar = false;
             if (this.isPlaying) this.player.play();
         },
         resizeLayoutSeekbar() {
@@ -295,21 +228,22 @@ export default {
             this.seekbarOffsetX = seekbar.getBoundingClientRect().left;
         },
 
-        grabVolbar(e) {
+        dragVolbar(e) {
             e.preventDefault();
-            this.isGrabbingVolbar = true;
+            this.isDragingVolbar = true;
             this.player.volume = e.layerX / this.volbarWidth;
             this.volume = this.player.volume;
         },
         moveVolbar(e) {
             e.preventDefault();
-            if (!this.isGrabbingVolbar) return;
-            this.player.volume = e.layerX / this.volbarWidth;
+            if (!this.isDragingVolbar) return;
+            const currentVolume = e.layerX / this.volbarWidth;
+            this.player.volume = currentVolume > 1 ? 1 : currentVolume;
             this.volume = this.player.volume;
         },
         releaseVolbar(e) {
             e.preventDefault();
-            this.isGrabbingVolbar = false;
+            this.isDragingVolbar = false;
         },
         resizeLayoutVolbar() {
             const volbar = this.$refs.volbar.$el;
@@ -357,41 +291,92 @@ export default {
 </script>
 
 <style lang="scss">
-    #app {
+#app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     }
     video {
-        width:100%;
-        height:auto;
         cursor: pointer;
+        width: 500px;
+        -webkit-transition: all .3s ease;
+        -o-transition: all .3s ease;
+        transition: all .3s ease;
+        &:hover .controls {
+            -webkit-transform: translateY(0);
+                -ms-transform: translateY(0);
+                    transform: translateY(0);
+        }
         &::-webkit-media-controls {
             display:none !important;
         }
     }
-
-    .vuedeo{
+    .fullscreen-on{
+        width:100%;
+        height:auto;
+        video, .player{
+            width: 100%;
+        }
+        .icon--fullscreen{
+            width: 24px;
+            height: 24px;
+        }
+        .btn--fullscreen{
+            width: 24px;
+            height: 24px;
+        }
+    }
+    .player{
         overflow: hidden;
         position: relative;
-        transition:all .3s;
-        height:auto;
+        width: 500px;
         &:hover .controls {
-            transform: translateY(0);
+            -webkit-transform: translateY(0);
+                -ms-transform: translateY(0);
+                    transform: translateY(0);
         }
     }
 
     .controls{
-        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+                box-sizing: border-box;
         position:absolute;
         bottom: 0;
         left: 0;
         width: 100%;
         background: #111;
-        padding: 5px;
-        transform: translateY(100%) translateY(1px);;
-        transition:all .3s;
+        padding: 20px 5px 5px;
+        -webkit-transform: translateY(100%) translateY(1px);
+            -ms-transform: translateY(100%) translateY(1px);
+                transform: translateY(100%) translateY(1px);;
+        -webkit-transition: all .5s ease;;
+        -o-transition: all .5s ease;;
+        transition: all .5s ease;
         z-index: 2147483647;
+        &__row{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: justify;
+                -ms-flex-pack: justify;
+                    justify-content: space-between;
+            -webkit-box-align: center;
+                -ms-flex-align: center;
+                    align-items: center;
+            &-left{
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: flex;
+                -webkit-box-align: center;
+                    -ms-flex-align: center;
+                        align-items: center;
+                width: 65%;
+                margin-left: -5px;
+            }
+            &-right{
+                margin-right: 5px;
+            }
+        }
     }
 
     .btn{
@@ -404,6 +389,8 @@ export default {
         cursor : pointer;
         padding : 0;
         display : inline-block;
+        width: 30px;
+        height: 30px;
         &:hover{
             opacity : 0.8;
         }
@@ -413,54 +400,68 @@ export default {
         &:disabled{
             opacity : 0.6;
         }
+        &--muted{
+            margin-left: 20px;
+            width: 15px;
+            height: 15px;
+        }
+        &--fullscreen{
+            width: 20px;
+            height: 20px;
+        }
     }
 
     .icon{
         width: 40px;
         height: 40px;
-        color: white
-    }
-
-    .icon svg{
-        width: 40px;
-        height: 40px;
+        color: white;
+        &--fullscreen-on{
+            width: 20px;
+            height: 20px;
+        }
+        &--volume{
+            width: 15px;
+            height: 15px;
+        }
+        &--muted{
+            width: 15px;
+            height: 15px;
+        }
     }
 
     .bar {
         cursor: pointer;
         position: relative;
         margin-bottom: 10px;
-        padding: 10px 0;
-        margin: 0 10px;
+        padding: 10px 0 ;
+        margin: 0 5px;
         &__current, &__back {
-        height: 3px;
-        position: absolute;
-        top: 10px;
-        right: 0;
-        left: 0;
+            height: 3px;
+            position: absolute;
+            top: 31%;
+            right: 0;
+            left: 0;
         }
         &__current {
-            // position: relative;
-            // top: 5px;
             z-index: 2;
             background-color: red;
-            transform: scaleX(0);
-            transform-origin: left;
-            &:after{
-                content:'';
-                position: absolute;
-                background:white;
-                width: 30px;
-                height: 10px;
-                right: 0;
-            }
+            -webkit-transform: scaleX(0);
+                -ms-transform: scaleX(0);
+                    transform: scaleX(0);
+            -webkit-transform-origin: left;
+                -ms-transform-origin: left;
+                    transform-origin: left;
         }
         &__back {
-        background-color: white;
+            background-color: white;
+        }
+        &.vol{
+            width: 30%;
         }
     }
 
-    .time{
+    .time-seconds{
+        padding: 5px 5px;
         font-size: 14px;
         color: white
     }

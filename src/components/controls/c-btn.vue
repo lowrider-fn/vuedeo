@@ -1,19 +1,21 @@
 <template>
-    <button :class="data.class"
-            @click="data.action($event)"
-    >
-        <c-icon v-for="(icon,i) in data.icons"
-                :key="i"
-                :class="icon.class"
-                :id="icon.id"
-                :sprite="sprite"
-                v-show="icon.show"
-        />
-    </button>
+    <div>
+        <button :class="data.class"
+                @click="data.action($event)"
+        >
+            <c-icon v-for="(icon,i) in data.icons"
+                    :key="i"
+                    :class="icon.class"
+                    :id="icon.id"
+                    :sprite="sprite"
+                    v-show="icon.show"
+            />
+        </button>
+    </div>
 </template>
 
 <script>
-import sprite from '@/sprite';
+import sprite from '../sprite';
 import Icon from './c-icon';
 
 export default {

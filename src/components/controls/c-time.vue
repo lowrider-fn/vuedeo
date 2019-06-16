@@ -11,7 +11,7 @@ export default {
             type: Object,
             default() {
                 return {
-                    class: 'time',
+                    class: 'time-seconds',
                     time : '00:00',
                 };
             },
