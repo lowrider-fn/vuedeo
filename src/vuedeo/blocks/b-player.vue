@@ -8,10 +8,14 @@
                :loop="settings.loop"
                :muted="settings.muted"
                :poster="settings.poster"
-               @click.self="$emit('click',$event)"
                :preload="settings.preload"
+               @click.self="$emit('click',$event)"
+               @dblclick.self="$emit('dblclick',$event)"
+               @loadedmetadata="$emit('ready', $event.target);
+                                $emit('loaded', $event.target.duration);"
+               @ended="$emit('ended',e)"
+               @timeupdate="$emit('timeupdate',$event.target.currentTime)"
         >
-
             <source v-for="(video,i) in settings.videos"
                     :key="i"
                     :id="video.id"
@@ -21,7 +25,7 @@
 
         </video>
         <slot name="body"></slot>
-        <slot name="controls" v-if="settings.controls"></slot>
+        <slot name="controls"></slot>
         <slot name="footer"></slot>
     </div>
 </template>
@@ -47,16 +51,7 @@ export default {
         },
     },
     mounted() {
-        const { vuedeo } = this.$refs;
-
-        vuedeo.addEventListener('loadedmetadata', (e) => {
-            this.$emit('ready', vuedeo);
-            this.$emit('loaded', e.target.duration);
-        });
-
-        vuedeo.addEventListener('ended', () => {
-            this.$emit('ended');
-        });
+        window.addEventListener('resize',(e) => this.$emit('resize', document.fullscreen));
     },
 };
 </script>

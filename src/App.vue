@@ -15,7 +15,7 @@
 
 <script>
 
-import vuedeo from './components/vuedeo';
+import {vuedeo} from './vuedeo';
 
 export default {
     name      : 'App',

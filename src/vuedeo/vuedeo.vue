@@ -3,9 +3,12 @@
         <b-player ref="player" class="player"
                   :settings="setData.settings"
                   @ready="ready($event)"
+                  @resize="resizeBar()"
                   @ended="ended($event)"
                   @loaded="loaded($event)"
-                  @click="playOrPause($event) "
+                  @click="playOrPause($event)"
+                  @dblclick="setScreenSize();
+                             resizeBar()"
         >
             <template v-slot:header>
                 <slot name="header"></slot>
@@ -13,7 +16,7 @@
             <template v-slot:body>
                 <slot name="body"></slot>
             </template>
-            <template v-slot:controls>
+            <template v-slot:controls v-if="setData.settings.controls">
                 <slot name="controls">
                     <div class="controls">
                         <c-bar ref="timebar"
@@ -124,18 +127,6 @@ export default {
         },
     },
     mounted() {
-        window.addEventListener('resize', debounce(() => {
-            this.resizeLayoutVolbar();
-            this.resizeLayoutSeekbar();
-        }), 100);
-        document.addEventListener('mousemove', (e) => {
-            this.moveVolbar(e);
-            this.moveSeekbar(e);
-        });
-        document.addEventListener('mouseup', (e) => {
-            this.releaseVolbar(e);
-            this.releaseSeekbar(e);
-        });
         if (document.addEventListener) {
             // As the video is playing, update the progress bar
             // video.addEventListener('timeupdate', () => {
@@ -149,6 +140,7 @@ export default {
     methods: {
         ready(player) {
             this.player = player;
+            this.resizeBar()
             this.$emit('ready', this.player);
         },
 
@@ -174,6 +166,11 @@ export default {
             this.toLoop();
             this.$emit('play');
         },
+        toLoop() {
+            this.currentTime = this.player.currentTime;
+            if (!this.isPlaying) return;
+            requestAnimationFrame(() => this.toLoop());
+        },
         pause() {
             this.player.pause();
             this.isPlaying = false;
@@ -186,58 +183,8 @@ export default {
             this.$emit('stop');
         },
 
-        toLoop() {
-            this.currentTime = this.player.currentTime;
-            if (!this.isPlaying) return;
-            requestAnimationFrame(() => this.toLoop());
-        },
-
-        grabSeekbar(e) {
-            e.preventDefault();
-            this.isDragingSeekbar = true;
-            this.player.currentTime = e.layerX / this.seekbarWidth * this.duration;
-            this.currentTime = this.player.currentTime;
-            this.player.pause();
-        },
-        moveSeekbar(e) {
-            e.preventDefault();
-            if (!this.isDragingSeekbar) return;
-            this.player.currentTime = (e.clientX - this.seekbarOffsetX - window.pageXOffset) / this.seekbarWidth * this.duration;
-            this.currentTime = this.player.currentTime;
-        },
-        releaseSeekbar(e) {
-            e.preventDefault();
-            this.isDragingSeekbar = false;
-            if (this.isPlaying) this.player.play();
-        },
-        resizeLayoutSeekbar() {
-            const seekbar = this.$refs.timebar.$el;
-            this.seekbarWidth = seekbar.clientWidth;
-            this.seekbarOffsetX = seekbar.getBoundingClientRect().left;
-        },
-
-        dragVolbar(e) {
-            e.preventDefault();
-            this.isDragingVolbar = true;
-            this.player.volume = e.layerX / this.volbarWidth;
-            this.volume = this.player.volume;
-        },
-        moveVolbar(e) {
-            e.preventDefault();
-            if (!this.isDragingVolbar) return;
-            const currentVolume = e.layerX / this.volbarWidth;
-            this.player.volume = currentVolume > 1 ? 1 : currentVolume;
-            this.volume = this.player.volume;
-        },
-        releaseVolbar(e) {
-            e.preventDefault();
-            this.isDragingVolbar = false;
-        },
-        resizeLayoutVolbar() {
-            const volbar = this.$refs.volbar.$el;
-            this.volbarWidth = volbar.clientWidth;
-            this.volbarbarOffsetX = volbar.getBoundingClientRect().left;
-        },
+        
+        
 
         convertSecondsToTime(time) {
             let seconds = Math.floor(time % 60);
@@ -260,6 +207,11 @@ export default {
             this.setIsFullScreen();
             this.$emit('resize', this.isFullScreen);
         },
+        resizeBar(){
+            this.resizeVolbar();
+            this.resizeSeekbar();
+            this.setIsFullScreen();
+        },
         setFullScreen() {
             const player = this.$refs.player.$el;
             if (player.requestFullScreen) player.requestFullScreen();
@@ -272,7 +224,55 @@ export default {
             else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
         },
         setIsFullScreen() {
-            this.isFullScreen = !this.isFullScreen;
+            this.isFullScreen = document.fullscreen;
+        },
+        resizeVolbar() {
+            const volbar = this.$refs.volbar.$el;
+            this.volbarWidth = volbar.clientWidth;
+            this.volbarbarOffsetX = volbar.getBoundingClientRect().left;
+        },
+        resizeSeekbar() {
+            const seekbar = this.$refs.timebar.$el;
+            this.seekbarWidth = seekbar.clientWidth;
+            this.seekbarOffsetX = seekbar.getBoundingClientRect().left;
+        },
+        
+        grabSeekbar(e) {
+            e.preventDefault();
+            this.isDragingSeekbar = true;
+            this.player.currentTime = e.layerX / this.seekbarWidth * this.duration;
+            this.currentTime = this.player.currentTime;
+            this.player.pause();
+        },
+        moveSeekbar(e) {
+            e.preventDefault();
+            if (!this.isDragingSeekbar) return;
+            this.player.currentTime = (e.clientX - this.seekbarOffsetX - window.pageXOffset) / this.seekbarWidth * this.duration;
+            this.currentTime = this.player.currentTime;
+        },
+        releaseSeekbar(e) {
+            e.preventDefault();
+            this.isDragingSeekbar = false;
+            if (this.isPlaying) this.player.play();
+        },
+
+
+        dragVolbar(e) {
+            e.preventDefault();
+            this.isDragingVolbar = true;
+            this.player.volume = e.layerX / this.volbarWidth;
+            this.volume = this.player.volume;
+        },
+        moveVolbar(e) {
+            e.preventDefault();
+            if (!this.isDragingVolbar) return;
+            const currentVolume = e.layerX / this.volbarWidth;
+            this.player.volume = currentVolume > 1 ? 1 : currentVolume;
+            this.volume = this.player.volume;
+        },
+        releaseVolbar(e) {
+            e.preventDefault();
+            this.isDragingVolbar = false;
         },
     },
 
