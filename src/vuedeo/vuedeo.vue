@@ -3,12 +3,14 @@
         <b-player ref="player" class="player"
                   :settings="setData.settings"
                   @ready="ready($event)"
-                  @resize="resizeBar()"
+                  @resize="resizeBar();"
                   @ended="ended($event)"
-                  @loaded="loaded($event)"
-                  @click="playOrPause($event)"
+                  @loadedmetadata="loadedmetadata($event)"
+                  @click="playOrPause($event);
+                          $emit('click');"
                   @dblclick="setScreenSize();
-                             resizeBar()"
+                             resizeBar();
+                             emit('click');"
         >
             <template v-slot:header>
                 <slot name="header"></slot>
@@ -63,13 +65,6 @@
 import sprite from './sprite';
 import setSettings from './m-set-settings';
 
-const debounce = (callback, duration) => {
-    let timer;
-    return (e) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => { callback(e) }, duration);
-    };
-};
 export default {
     components: {
         'b-player': () => import('./blocks/b-player'),
@@ -144,20 +139,20 @@ export default {
             this.$emit('ready', this.player);
         },
 
-        loaded(e) {
+        loadedmetadata(e) {
             this.duration = e;
             this.volume = this.player.volume;
-            this.$emit('loaded', this.player);
+            this.$emit('loadedmetadata', this.player);
         },
 
         ended() {
             this.player.currentTime = 0;
             this.isPlaying = false;
+            this.$emit('ended', this.player);
         },
 
         playOrPause(e) {
             this.isPlaying ? this.pause() : this.play();
-            this.$emit('click');
         },
 
         play() {
@@ -199,7 +194,6 @@ export default {
         mutedOrVolume() {
             this.player.muted = !this.player.muted;
             this.isMuted = this.player.muted;
-            this.$emit('muted', this.isMuted);
         },
 
         setScreenSize() {
