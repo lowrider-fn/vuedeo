@@ -275,15 +275,15 @@ export default {
 </script>
 <style lang="scss" >
     .video {
-        cursor: pointer;
         width: 500px;
+        cursor: pointer;
         -webkit-transition: all .3s ease;
         -o-transition: all .3s ease;
         transition: all .3s ease;
         &:hover .controls {
             -webkit-transform: translateY(0);
-                -ms-transform: translateY(0);
-                    transform: translateY(0);
+            -ms-transform: translateY(0);
+            transform: translateY(0);
         }
         &::-webkit-media-controls {
             display:none !important;
@@ -305,50 +305,52 @@ export default {
         }
     }
     .player{
-        overflow: hidden;
         position: relative;
+        overflow: hidden;
         width: 500px;
         &:hover .controls {
             -webkit-transform: translateY(0);
-                -ms-transform: translateY(0);
-                    transform: translateY(0);
+            -ms-transform: translateY(0);
+            transform: translateY(0);
         }
     }
 
     .controls{
-        -webkit-box-sizing: border-box;
-                box-sizing: border-box;
         position:absolute;
         bottom: 0;
         left: 0;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
         width: 100%;
-        background: #111;
         padding: 20px 5px 5px;
-        -webkit-transform: translateY(100%) translateY(1px);
-            -ms-transform: translateY(100%) translateY(1px);
-                transform: translateY(100%) translateY(1px);;
-        -webkit-transition: all .5s ease;;
-        -o-transition: all .5s ease;;
+        -webkit-transition: all .5s ease;
+        -o-transition: all .5s ease;
         transition: all .5s ease;
+        -webkit-transform: translateY(100%) translateY(1px);
+        -ms-transform: translateY(100%) translateY(1px);
+        transform: translateY(100%) translateY(1px);
+        background: #111;
         &__row{
             display: -webkit-box;
             display: -ms-flexbox;
             display: flex;
-            -webkit-box-pack: justify;
-                -ms-flex-pack: justify;
-                    justify-content: space-between;
+
+            align-items: center;
             -webkit-box-align: center;
-                -ms-flex-align: center;
-                    align-items: center;
+            -webkit-box-pack: justify;
+            -ms-flex-align: center;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
             &-left{
                 display: -webkit-box;
                 display: -ms-flexbox;
                 display: flex;
-                -webkit-box-align: center;
-                    -ms-flex-align: center;
-                        align-items: center;
                 width: 65%;
                 margin-left: -5px;
+
+                align-items: center;
+                -webkit-box-align: center;
+                -ms-flex-align: center;
             }
             &-right{
                 margin-right: 5px;
@@ -357,17 +359,17 @@ export default {
     }
 
     .btn{
-        -webkit-transition:all, 0.3s, ease-in-out;
-        -o-transition:all, 0.3s, ease-in-out;
-        transition:all, 0.3s, ease-in-out;
-        background : transparent;
-        border : none;
-        outline : none;
-        cursor : pointer;
-        padding : 0;
         display : inline-block;
         width: 30px;
         height: 30px;
+        padding : 0;
+        cursor : pointer;
+        -webkit-transition:all, 0.3s, ease-in-out;
+        -o-transition:all, 0.3s, ease-in-out;
+        transition:all, 0.3s, ease-in-out;
+        border : none;
+        outline : none;
+        background : transparent;
         &:hover{
             opacity : 0.8;
         }
@@ -378,9 +380,9 @@ export default {
             opacity : 0.6;
         }
         &--muted{
-            margin-left: 20px;
             width: 15px;
             height: 15px;
+            margin-left: 20px;
         }
         &--fullscreen{
             width: 20px;
@@ -407,27 +409,27 @@ export default {
     }
 
     .bar {
-        cursor: pointer;
         position: relative;
+        margin: 0 5px;
         margin-bottom: 10px;
         padding: 10px 0 ;
-        margin: 0 5px;
+        cursor: pointer;
         &__current, &__back {
-            height: 3px;
             position: absolute;
             top: 31%;
             right: 0;
             left: 0;
+            height: 3px;
         }
         &__current {
             z-index: 2;
-            background-color: red;
             -webkit-transform: scaleX(0);
-                -ms-transform: scaleX(0);
-                    transform: scaleX(0);
+            -ms-transform: scaleX(0);
+            transform: scaleX(0);
             -webkit-transform-origin: left;
-                -ms-transform-origin: left;
-                    transform-origin: left;
+            -ms-transform-origin: left;
+            transform-origin: left;
+            background-color: red;
         }
         &__back {
             background-color: white;
@@ -439,7 +441,7 @@ export default {
 
     .time-seconds{
         padding: 5px 5px;
+        color: white;
         font-size: 14px;
-        color: white
     }
 </style>

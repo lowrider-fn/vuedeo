@@ -1,8 +1,9 @@
 <template>
-    <div :class="settings.isFullScreen ? 'fullscreen-on' : ''">
+    <div :class="`${settings.isFullScreen ? 'fullscreen-on' : ''} ${score > 0 ? 'controls-active' : ''}`"
+         @mousemove="checkEvent($event.target)"
+    >
         <slot name="header"></slot>
-        <video ref="vuedeo"
-               :class="settings.class"
+        <video :class="settings.class"
                :controls="false"
                :autoplay="settings.autoplay"
                :loop="settings.loop"
@@ -13,7 +14,7 @@
                @dblclick.self="$emit('dblclick',$event)"
                @loadedmetadata="$emit('ready', $event.target);
                                 $emit('loadedmetadata', $event.target.duration);"
-               @ended="$emit('ended',e)"
+               @ended="$emit('ended',$event.target)"
                @timeupdate="$emit('timeupdate',$event.target.currentTime)"
                @abort="$emit('abort', $event.target)"
                @canplay="$emit('canplay', $event.target)"
@@ -37,6 +38,7 @@
                @suspend="$emit('suspend', $event.target)"
                @volumechange="$emit('volumechange', $event.target.volume)"
                @waiting="$emit('ready', $event.target)"
+               ref="vuedeo"
         >
             <source v-for="(video,i) in settings.videos"
                     :key="i"
@@ -53,6 +55,7 @@
 </template>
 
 <script>
+import debounce from 'lodash/fp';
 
 export default {
     name : 'Vuedeo',
@@ -72,9 +75,28 @@ export default {
             }),
         },
     },
+    data: () => ({
+        score           : 0,
+        decreaseInterval: null,
+    }),
     mounted() {
-        window.addEventListener('resize',(e) => this.$emit('resize', document.fullscreen));
+        window.addEventListener('resize', () => this.$emit('resize', document.fullscreen));
     },
+    methods: {
+        checkEvent() {
+            // console.log(debounce);
+
+            // clearInterval(this.decreaseInterval);
+            this.score++;
+            // this.decreaseInterval = setInterval(this.decrease, 5000);
+            debounce(this.decrease, 1000);
+        },
+        decrease() {
+            console.log('ok');
+
+            if (this.score > 0) this.score = 0;
+        },
+    }
 };
 </script>
 <style lang="scss">
