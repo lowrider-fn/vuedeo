@@ -7,10 +7,33 @@
                   @ended="ended($event)"
                   @loadedmetadata="loadedmetadata($event)"
                   @click="playOrPause($event);
-                          $emit('click');"
+                          $emit('click',$event);"
                   @dblclick="setScreenSize();
                              resizeBar();
-                             emit('click');"
+                             $emit('dblclick');"
+                @timeupdate="$emit('timeupdate',$event.target.currentTime)"
+                @abort="$emit('abort', $event.target)"
+                @canplay="$emit('canplay', $event.target)"
+                @canplaythrough="$emit('canplaythrough', $event.target)"
+                @durationchange="$emit('durationchange', $event.target)"
+                @emptied="$emit('emptied', $event.target)"
+                @encrypted="$emit('encrypted', $event.target)"
+                @error="$emit('error', $event.target)"
+                @interruptbegin="$emit('interruptbegin', $event.target)"
+                @interruptend="$emit('interruptend', $event.target)"
+                @loadeddata="$emit('loadeddata', $event.target)"
+                @loadstart="$emit('loadstart', $event.target)"
+                @pause="$emit('pause', $event.target)"
+                @play="$emit('play', $event.target)"
+                @playing="$emit('playing', $event.target)"
+                @progress="$emit('progress', $event.target)"
+                @ratechange="$emit('ratechange', $event.target)"
+                @seeked="$emit('seeked', $event.target)"
+                @seeking="$emit('seeking', $event.target)"
+                @stalled="$emit('stalled', $event.target)"
+                @suspend="$emit('suspend', $event.target)"
+                @volumechange="$emit('volumechange', $event.target.volume)"
+                @waiting="$emit('waiting', $event.target)"            
         >
             <template v-slot:header>
                 <slot name="header"></slot>
@@ -18,7 +41,7 @@
             <template v-slot:body>
                 <slot name="body"></slot>
             </template>
-            <template v-slot:controls v-if="setData.settings.controls">
+            <template v-slot:controls >
                 <slot name="controls">
                     <div class="controls">
                         <c-bar ref="timebar"
@@ -74,7 +97,7 @@ export default {
     },
     mixins: [setSettings],
     props : {
-        data: {
+                    data: {
             type: Object,
         },
         sprite: {
@@ -136,19 +159,16 @@ export default {
         ready(player) {
             this.player = player;
             this.resizeBar()
-            this.$emit('ready', this.player);
         },
 
         loadedmetadata(e) {
             this.duration = e;
             this.volume = this.player.volume;
-            this.$emit('loadedmetadata', this.player);
         },
 
         ended() {
             this.player.currentTime = 0;
             this.isPlaying = false;
-            this.$emit('ended', this.player);
         },
 
         playOrPause(e) {
@@ -159,7 +179,6 @@ export default {
             this.player.play();
             this.isPlaying = true;
             this.toLoop();
-            this.$emit('play');
         },
         toLoop() {
             this.currentTime = this.player.currentTime;
@@ -169,13 +188,11 @@ export default {
         pause() {
             this.player.pause();
             this.isPlaying = false;
-            this.$emit('pause');
         },
 
         stop() {
             this.player.currentTime = 0;
             this.pause();
-            this.$emit('stop');
         },
 
         
@@ -277,9 +294,9 @@ export default {
     .video {
         width: 500px;
         cursor: pointer;
-        -webkit-transition: all .3s ease;
-        -o-transition: all .3s ease;
-        transition: all .3s ease;
+        -webkit-transition: center .3s ease;
+        -o-transition: center .3s ease;
+        transition: center .3s ease;
         &:hover .controls {
             -webkit-transform: translateY(0);
             -ms-transform: translateY(0);
@@ -308,10 +325,15 @@ export default {
         position: relative;
         overflow: hidden;
         width: 500px;
-        &:hover .controls {
-            -webkit-transform: translateY(0);
-            -ms-transform: translateY(0);
-            transform: translateY(0);
+        &.controls-active {
+            // .video{
+            //     cursor: none;
+            // }
+            .controls {
+                -webkit-transform: translateY(0);
+                -ms-transform: translateY(0);
+                transform: translateY(0);
+            }
         }
     }
 

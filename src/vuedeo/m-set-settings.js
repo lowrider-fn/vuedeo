@@ -7,31 +7,31 @@ const setSettings = {
                         class : 'btn--fullscreen btn',
                         action: () => this.setScreenSize(),
                         icons : [
-                            { id : 'fullscreenOn', class : 'icon--fullscreen-on icon', show : !this.isFullScreen },
-                            { id : 'fullscreenOff', class : 'icon--fullscreen icon', show : this.isFullScreen }
+                            { id: 'fullscreenOn', class: 'icon--fullscreen-on icon', show: !this.isFullScreen },
+                            { id: 'fullscreenOff', class: 'icon--fullscreen icon', show: this.isFullScreen },
                         ],
                     },
                     playControl: {
                         class : 'btn--play-control btn',
                         action: () => this.playOrPause(),
                         icons : [
-                            { id : 'play', class : 'icon--play icon', show : !this.isPlaying },
-                            { id : 'pause', class : 'icon--pause icon', show : this.isPlaying }
+                            { id: 'play', class: 'icon--play icon', show: !this.isPlaying },
+                            { id: 'pause', class: 'icon--pause icon', show: this.isPlaying },
                         ],
                     },
                     stop: {
                         class : 'btn--stop btn',
                         action: () => this.stop(),
                         icons : [
-                            { id : 'stop', class : 'icon--stop icon', show : true }
+                            { id: 'stop', class: 'icon--stop icon', show: true },
                         ],
                     },
                     muted: {
                         class : 'btn--muted btn',
                         action: () => this.mutedOrVolume(),
                         icons : [
-                            { id : 'volume', class : 'icon--volume icon', show : !this.isMuted },
-                            { id : 'muted', class : 'icon--muted icon', show : this.isMuted }
+                            { id: 'volume', class: 'icon--volume icon', show: !this.isMuted },
+                            { id: 'muted', class: 'icon--muted icon', show: this.isMuted },
                         ],
                     },
 
@@ -87,8 +87,13 @@ const setSettings = {
                     muted       : false,
                     poster      : '',
                     preload     : 'metadata',
+                    header      : true,
+                    body        : true,
                     controls    : true,
+                    footer      : true,
                     class       : 'video',
+                    fsClass     : 'fullscreen-on',
+                    activeClass : 'controls-active',
                     videos      : this.videos,
                 },
             };

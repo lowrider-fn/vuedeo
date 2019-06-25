@@ -1,8 +1,8 @@
 <template>
-    <div :class="`${settings.isFullScreen ? 'fullscreen-on' : ''} ${score > 0 ? 'controls-active' : ''}`"
+    <div :class="`${settings.isFullScreen ? settings.fsClass : ''} ${score > 0 ? settings.activeClass : ''}`"
          @mousemove="checkEvent($event.target)"
     >
-        <slot name="header"></slot>
+        <slot name="header" v-if="settings.header"></slot>
         <video :class="settings.class"
                :controls="false"
                :autoplay="settings.autoplay"
@@ -10,6 +10,7 @@
                :muted="settings.muted"
                :poster="settings.poster"
                :preload="settings.preload"
+
                @click.self="$emit('click',$event)"
                @dblclick.self="$emit('dblclick',$event)"
                @loadedmetadata="$emit('ready', $event.target);
@@ -37,7 +38,7 @@
                @stalled="$emit('stalled', $event.target)"
                @suspend="$emit('suspend', $event.target)"
                @volumechange="$emit('volumechange', $event.target.volume)"
-               @waiting="$emit('ready', $event.target)"
+               @waiting="$emit('waiting', $event.target)"
                ref="vuedeo"
         >
             <source v-for="(video,i) in settings.videos"
@@ -48,14 +49,14 @@
             >
 
         </video>
-        <slot name="body"></slot>
-        <slot name="controls"></slot>
-        <slot name="footer"></slot>
+        <slot name="body" v-if="settings.body"></slot>
+        <slot name="controls" v-if="settings.controls"></slot>
+        <slot name="footer" v-if="settings.footer"></slot>
     </div>
 </template>
 
 <script>
-import debounce from 'lodash/fp';
+import debounce from 'lodash/debounce';
 
 export default {
     name : 'Vuedeo',
@@ -69,8 +70,13 @@ export default {
                 muted       : false,
                 poster      : '',
                 preload     : 'metadata',
+                header      : true,
+                body        : true,
                 controls    : true,
+                footer      : true,
                 class       : 'player',
+                fsClass     : 'fullscreen-on',
+                activeClass : 'controls-active',
                 videos      : [],
             }),
         },
@@ -84,19 +90,15 @@ export default {
     },
     methods: {
         checkEvent() {
-            // console.log(debounce);
-
-            // clearInterval(this.decreaseInterval);
             this.score++;
-            // this.decreaseInterval = setInterval(this.decrease, 5000);
-            debounce(this.decrease, 1000);
+            this.decrease();
         },
-        decrease() {
-            console.log('ok');
-
+        // eslint-disable-next-line func-names
+        decrease: debounce(function () {
             if (this.score > 0) this.score = 0;
-        },
-    }
+        }, 3000),
+
+    },
 };
 </script>
 <style lang="scss">
@@ -113,6 +115,5 @@ export default {
         &[name="footer"]{
             z-index: 2147483649;
         }
-
     }
 </style>

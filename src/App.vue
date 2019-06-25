@@ -15,7 +15,7 @@
 
 <script>
 
-import {vuedeo} from './vuedeo';
+import { vuedeo } from './vuedeo';
 
 export default {
     name      : 'App',
@@ -29,8 +29,9 @@ export default {
 <style lang="scss">
 #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
+
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    }
+}
 
 </style>
