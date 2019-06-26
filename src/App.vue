@@ -1,26 +1,22 @@
 <template>
     <div id="app">
         <vuedeo refs="vuedeo">
-            <template v-slot:header>
-            </template>
-            <template v-slot:body>
-            </template>
-            <template v-slot:controls>
-            </template>
-            <template v-slot:footer>
-            </template>
+            <template v-slot:header />
+            <template v-slot:body />
+            <template v-slot:controls />
+            <template v-slot:footer />
         </vuedeo>
     </div>
 </template>
 
 <script>
 
-import { vuedeo } from './vuedeo';
+import { Vuedeo } from './vuedeo';
 
 export default {
     name      : 'App',
     components: {
-        vuedeo,
+        vuedeo: Vuedeo,
     },
 };
 

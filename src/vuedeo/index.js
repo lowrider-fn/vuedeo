@@ -1,7 +1,7 @@
-import vuedeo             from './vuedeo';
-import { icon, player }    from './blocks';
-import { time, bar, btn } from './controls';
+import Vuedeo             from './vuedeo';
+import { Icon, Player }    from './blocks';
+import { Time, Bar, Btn } from './controls';
 
 export {
-    vuedeo, time, bar, btn, icon, player
+    Vuedeo, Time, Bar, Btn, Icon, Player,
 };

@@ -14,10 +14,10 @@
         "sourceType": "module"
      },
     "extends": [
-        "airbnb-base",
         "plugin:vue/recommended"
     ],
     "rules": {
+        "arca/curly": 0,
         "no-restricted-syntax":0,
         "no-param-reassign":0,
         "import/no-unresolved":0,
@@ -33,7 +33,7 @@
         "vue/attribute-hyphenation":0,
         "vue/html-quotes": false,
         "vue/html-self-closing": ["error", {
-            "html": {
+            " html": {
 				"void": "never",
 				"normal": "never",
 				"component": "always"

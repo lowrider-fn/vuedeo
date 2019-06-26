@@ -2,7 +2,7 @@
     <div id="app">
         <b-player ref="player" class="player"
                   :settings="setData.settings"
-                  @ready="ready($event)"
+                  @ready="ready($event);$emit('ready',$event);"
                   @resize="resizeBar();"
                   @ended="ended($event)"
                   @loadedmetadata="loadedmetadata($event)"
@@ -11,37 +11,14 @@
                   @dblclick="setScreenSize();
                              resizeBar();
                              $emit('dblclick');"
-                @timeupdate="$emit('timeupdate',$event.target.currentTime)"
-                @abort="$emit('abort', $event.target)"
-                @canplay="$emit('canplay', $event.target)"
-                @canplaythrough="$emit('canplaythrough', $event.target)"
-                @durationchange="$emit('durationchange', $event.target)"
-                @emptied="$emit('emptied', $event.target)"
-                @encrypted="$emit('encrypted', $event.target)"
-                @error="$emit('error', $event.target)"
-                @interruptbegin="$emit('interruptbegin', $event.target)"
-                @interruptend="$emit('interruptend', $event.target)"
-                @loadeddata="$emit('loadeddata', $event.target)"
-                @loadstart="$emit('loadstart', $event.target)"
-                @pause="$emit('pause', $event.target)"
-                @play="$emit('play', $event.target)"
-                @playing="$emit('playing', $event.target)"
-                @progress="$emit('progress', $event.target)"
-                @ratechange="$emit('ratechange', $event.target)"
-                @seeked="$emit('seeked', $event.target)"
-                @seeking="$emit('seeking', $event.target)"
-                @stalled="$emit('stalled', $event.target)"
-                @suspend="$emit('suspend', $event.target)"
-                @volumechange="$emit('volumechange', $event.target.volume)"
-                @waiting="$emit('waiting', $event.target)"            
         >
             <template v-slot:header>
-                <slot name="header"></slot>
+                <slot name="header" />
             </template>
             <template v-slot:body>
-                <slot name="body"></slot>
+                <slot name="body" />
             </template>
-            <template v-slot:controls >
+            <template v-slot:controls>
                 <slot name="controls">
                     <div class="controls">
                         <c-bar ref="timebar"
@@ -78,14 +55,14 @@
                 </slot>
             </template>
             <template v-slot:footer>
-                <slot name="footer"></slot>
+                <slot name="footer" />
             </template>
         </b-player>
     </div>
 </template>
 
 <script>
-import sprite from './sprite';
+import sprite      from './sprite';
 import setSettings from './m-set-settings';
 
 export default {
@@ -97,7 +74,7 @@ export default {
     },
     mixins: [setSettings],
     props : {
-                    data: {
+        data: {
             type: Object,
         },
         sprite: {
@@ -132,7 +109,7 @@ export default {
 
     computed: {
         setData() {
-            return this.data || this.setSettings;
+            return this.setSettings;
         },
         getProgressTime() {
             return this.currentTime / this.duration;
@@ -157,18 +134,20 @@ export default {
     },
     methods: {
         ready(player) {
+            console.log(player);
+
             this.player = player;
-            this.resizeBar()
+            this.resizeBar();
         },
 
         loadedmetadata(e) {
             this.duration = e;
-            this.volume = this.player.volume;
+            this.volume   = this.player.volume;
         },
 
         ended() {
             this.player.currentTime = 0;
-            this.isPlaying = false;
+            this.isPlaying          = false;
         },
 
         playOrPause(e) {
@@ -195,9 +174,6 @@ export default {
             this.pause();
         },
 
-        
-        
-
         convertSecondsToTime(time) {
             let seconds = Math.floor(time % 60);
 
@@ -210,7 +186,7 @@ export default {
 
         mutedOrVolume() {
             this.player.muted = !this.player.muted;
-            this.isMuted = this.player.muted;
+            this.isMuted      = this.player.muted;
         },
 
         setScreenSize() {
@@ -218,48 +194,56 @@ export default {
             this.setIsFullScreen();
             this.$emit('resize', this.isFullScreen);
         },
-        resizeBar(){
+        resizeBar() {
             this.resizeVolbar();
             this.resizeSeekbar();
             this.setIsFullScreen();
+            this.$emit('resize');
         },
         setFullScreen() {
-            const player = this.$refs.player.$el;
-            if (player.requestFullScreen) player.requestFullScreen();
-            else if (player.webkitRequestFullScreen) player.webkitRequestFullScreen();
-            else if (player.mozRequestFullScreen) player.mozRequestFullScreen();
+            if(this.$refs.player) {
+                const player = this.$refs.player.$el;
+                if (player.requestFullScreen) player.requestFullScreen();
+                else if (player.webkitRequestFullScreen) player.webkitRequestFullScreen();
+                else if (player.mozRequestFullScreen) player.mozRequestFullScreen(); }
         },
         exitFullScreen() {
-            if (document.cancelFullScreen) document.cancelFullScreen();
-            else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            if (document.cancelFullScreen) {
+                document.cancelFullScreen();
+            } else if (document.webkitCancelFullScreen) {
+                document.webkitCancelFullScreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            }
         },
         setIsFullScreen() {
             this.isFullScreen = document.fullscreen;
         },
         resizeVolbar() {
-            const volbar = this.$refs.volbar.$el;
-            this.volbarWidth = volbar.clientWidth;
-            this.volbarbarOffsetX = volbar.getBoundingClientRect().left;
+            if(this.$refs.volbar) {
+                const volbar          = this.$refs.volbar.$el;
+                this.volbarWidth      = volbar.clientWidth;
+                this.volbarbarOffsetX = volbar.getBoundingClientRect().left; }
         },
         resizeSeekbar() {
-            const seekbar = this.$refs.timebar.$el;
-            this.seekbarWidth = seekbar.clientWidth;
-            this.seekbarOffsetX = seekbar.getBoundingClientRect().left;
+            if(this.$refs.timebar) {
+                const seekbar       = this.$refs.timebar.$el;
+                this.seekbarWidth   = seekbar.clientWidth;
+                this.seekbarOffsetX = seekbar.getBoundingClientRect().left; }
         },
-        
+
         grabSeekbar(e) {
             e.preventDefault();
-            this.isDragingSeekbar = true;
+            this.isDragingSeekbar   = true;
             this.player.currentTime = e.layerX / this.seekbarWidth * this.duration;
-            this.currentTime = this.player.currentTime;
+            this.currentTime        = this.player.currentTime;
             this.player.pause();
         },
         moveSeekbar(e) {
             e.preventDefault();
             if (!this.isDragingSeekbar) return;
             this.player.currentTime = (e.clientX - this.seekbarOffsetX - window.pageXOffset) / this.seekbarWidth * this.duration;
-            this.currentTime = this.player.currentTime;
+            this.currentTime        = this.player.currentTime;
         },
         releaseSeekbar(e) {
             e.preventDefault();
@@ -267,19 +251,18 @@ export default {
             if (this.isPlaying) this.player.play();
         },
 
-
         dragVolbar(e) {
             e.preventDefault();
             this.isDragingVolbar = true;
-            this.player.volume = e.layerX / this.volbarWidth;
-            this.volume = this.player.volume;
+            this.player.volume   = e.layerX / this.volbarWidth;
+            this.volume          = this.player.volume;
         },
         moveVolbar(e) {
             e.preventDefault();
             if (!this.isDragingVolbar) return;
             const currentVolume = e.layerX / this.volbarWidth;
-            this.player.volume = currentVolume > 1 ? 1 : currentVolume;
-            this.volume = this.player.volume;
+            this.player.volume  = currentVolume > 1 ? 1 : currentVolume;
+            this.volume         = this.player.volume;
         },
         releaseVolbar(e) {
             e.preventDefault();
