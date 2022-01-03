@@ -1,64 +1,62 @@
 <template>
-    <div id="app">
-        <b-player ref="player" class="player"
-                  :settings="setData.settings"
-                  @ready="ready($event);$emit('ready',$event);"
-                  @resize="resizeBar();"
-                  @ended="ended($event)"
-                  @loadedmetadata="loadedmetadata($event)"
-                  @click="playOrPause($event);
-                          $emit('click',$event);"
-                  @dblclick="setScreenSize();
-                             resizeBar();
-                             $emit('dblclick');"
-        >
-            <template v-slot:header>
-                <slot name="header" />
-            </template>
-            <template v-slot:body>
-                <slot name="body" />
-            </template>
-            <template v-slot:controls>
-                <slot name="controls">
-                    <div class="controls">
-                        <c-bar ref="timebar"
-                               :data="setData.bar.timebar"
-                        />
-                        <div class="controls__row">
-                            <div class="controls__row-left">
-                                <c-btn :sprite="sprite"
-                                       :data="setData.button.playControl"
-                                />
-                                <c-btn :sprite="sprite"
-                                       :data="setData.button.stop"
-                                />
-                                <c-btn :sprite="sprite"
-                                       :data="setData.button.muted"
-                                />
-                                <c-bar ref="volbar"
-                                       :data="setData.bar.volbar"
-                                />
-                                <c-time
-                                    :data="setData.timeSeconds.current"
-                                />
-                                <c-time
-                                    :data="setData.timeSeconds.duration"
-                                />
-                            </div>
-                            <div class="controls__row-right">
-                                <c-btn :sprite="sprite"
-                                       :data="setData.button.fullscreen"
-                                />
-                            </div>
+    <b-player ref="player" class="player"
+              :settings="setData.settings"
+              @ready="ready($event);$emit('ready',$event);"
+              @resize="resizeBar();"
+              @ended="ended($event)"
+              @loadedmetadata="loadedmetadata($event)"
+              @click="playOrPause($event);
+                      $emit('click',$event);"
+              @dblclick="setScreenSize();
+                         resizeBar();
+                         $emit('dblclick');"
+    >
+        <template v-slot:header>
+            <slot name="header" />
+        </template>
+        <template v-slot:body>
+            <slot name="body" />
+        </template>
+        <template v-slot:controls>
+            <slot name="controls">
+                <div class="controls">
+                    <c-bar ref="timebar"
+                           :data="setData.bar.timebar"
+                    />
+                    <div class="controls__row">
+                        <div class="controls__row-left">
+                            <c-btn :sprite="sprite"
+                                   :data="setData.button.playControl"
+                            />
+                            <c-btn :sprite="sprite"
+                                   :data="setData.button.stop"
+                            />
+                            <c-btn :sprite="sprite"
+                                   :data="setData.button.muted"
+                            />
+                            <c-bar ref="volbar"
+                                   :data="setData.bar.volbar"
+                            />
+                            <c-time
+                                :data="setData.timeSeconds.current"
+                            />
+                            <c-time
+                                :data="setData.timeSeconds.duration"
+                            />
+                        </div>
+                        <div class="controls__row-right">
+                            <c-btn :sprite="sprite"
+                                   :data="setData.button.fullscreen"
+                            />
                         </div>
                     </div>
-                </slot>
-            </template>
-            <template v-slot:footer>
-                <slot name="footer" />
-            </template>
-        </b-player>
-    </div>
+                </div>
+            </slot>
+        </template>
+        <template v-slot:footer>
+            <slot name="footer" />
+        </template>
+    </b-player>
 </template>
 
 <script>
@@ -101,8 +99,8 @@ export default {
         isFullScreen: false,
 
         videos: [{
-            id  : 'rt',
-            src : 'https://cdnv.rt.com/russian/video/2019.06/5d001cd5370f2c313e8b462d.mp4',
+            id  : 'youTube',
+            src : 'https://videos.pond5.com/abstract-high-tech-digital-technology-footage-083048045_main_xxl.mp4',
             type: 'video/mp4',
         }],
     }),
@@ -416,7 +414,6 @@ export default {
     .bar {
         position: relative;
         margin: 0 5px;
-        margin-bottom: 10px;
         padding: 10px 0 ;
         cursor: pointer;
         &__current, &__back {
