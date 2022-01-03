@@ -1,4 +1,4 @@
-# Vuedeo. [Demo]()
+# Vuedeo. [Demo](https://lowrider-fn.github.io/vuedeo/)
 
 ## Project setup
 ```
