@@ -27,6 +27,7 @@ export default {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     padding: 50px;
     display: flex;
+    justify-content: center;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
